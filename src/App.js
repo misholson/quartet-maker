@@ -1,7 +1,6 @@
-import logo from './logo.svg';
 import './App.css';
 import { Layout } from './Layout';
-import { Route, Router, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 import { Dashboard } from './Dashboard';
 import { Quartet } from './Quartet';
 import { BrowserRouter } from 'react-router-dom';

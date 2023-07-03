@@ -5,13 +5,13 @@ using System.IO;
 
 public class QuartetMakerContext : DbContext
 {
-    public DbSet<Arranger> Arrangers { get; set; }
-    public DbSet<Song> Songs { get; set; }
-    public DbSet<User> Users { get; set; }
+    public DbSet<Arranger>? Arrangers { get; set; }
+    public DbSet<Song>? Songs { get; set; }
+    public DbSet<User>? Users { get; set; }
 
-    public DbSet<Arrangement> Arrangements { get; set; }
+    public DbSet<Arrangement>? Arrangements { get; set; }
 
-    public DbSet<KnownArrangement> KnownArrangements { get; set; }
+    public DbSet<KnownArrangement>? KnownArrangements { get; set; }
 
     //public string DbPath { get; }
 

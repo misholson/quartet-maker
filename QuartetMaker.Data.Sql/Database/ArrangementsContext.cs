@@ -13,7 +13,7 @@ public class ArrangementsContext : IArrangements
 
     public async Task<Arrangement> GetArrangement(int id, CancellationToken cancellationToken = default)
     {
-        return await _db.Arrangements.FirstOrDefaultAsync(ent => ent.ID == id, cancellationToken);
+        return await _db.Arrangements?.FirstOrDefaultAsync(ent => ent.ID == id, cancellationToken);
     }
 
     public async Task<Arrangement> UpdateArrangement(Arrangement song, CancellationToken cancellationToken = default)

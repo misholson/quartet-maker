@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
+        },
+        {
+            "name": "SWA Start",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "swa start"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "SWA w/Debugger",
+            "configurations": ["Attach to .NET Functions", "SWA Start"]
+        }
+    ]
+}

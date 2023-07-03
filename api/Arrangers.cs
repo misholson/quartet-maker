@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace QuartetMaker.API
 {
-    public static class AddArranger
+    public static class Arrangers
     {
         [FunctionName("AddArranger")]
         public static async Task<IActionResult> Run(

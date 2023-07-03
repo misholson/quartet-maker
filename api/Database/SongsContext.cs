@@ -19,11 +19,11 @@ public class SongsContext : ISongs
         var entity = await GetSong(song.ID);
         if (entity == null)
         {
-            _db.Songs.Add(entity);
+            _db.Songs.Add(song);
         }
         else
         {
-            _db.Songs.Update(entity);
+            _db.Songs.Update(song);
         }
         await _db.SaveChangesAsync(cancellationToken);
 

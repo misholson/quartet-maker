@@ -6,6 +6,7 @@ import { Quartet } from './Quartet';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { SongEdit } from './Manage/SongEdit';
 
 const queryClient = new QueryClient();
 function App() {
@@ -21,7 +22,7 @@ function App() {
               <Route path="/join-quartet" element={<>Join</>} />
               <Route path="/create-quartet" element={<>Create</>} />
               <Route path="/manage-arrangers" element={<>Manage Arrangers</>} />
-              <Route path="/manage-songs" element={<>Manage Songs</>} />
+              <Route path="/manage-songs" element={<SongEdit />} />
               <Route path="/manage-arrangements" element={<>Manage Arrangements</>} />
               <Route path="/manage-users" element={<>Manage Users</>} />
             </Routes>

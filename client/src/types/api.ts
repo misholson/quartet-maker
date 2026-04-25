@@ -41,6 +41,13 @@ export interface LoginResponse {
   name: string
 }
 
+export interface SongSummary {
+  id: number
+  title: string
+  arranger: string | null
+  voicing: Voicing | null
+}
+
 export interface QuartetSong {
   title: string
   arranger: string | null

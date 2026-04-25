@@ -18,6 +18,8 @@ public record PartCoverageDto(
 
 public record QuartetSongDto(string Title, string? Arranger, Voicing? Voicing, PartCoverageDto Coverage, bool IsComplete);
 
+public record SongSummaryDto(int Id, string Title, string? Arranger, Voicing? Voicing);
+
 public record GoogleLoginRequest(string IdToken);
 
 public record LoginResponse(string Token, int SingerId, string Name);

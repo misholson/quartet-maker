@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import type {
   Singer,
   SingerSummary,
+  SongSummary,
   RepertoireEntry,
   AddSongRequest,
   QuartetSong,
@@ -68,6 +69,10 @@ export const api = createApi({
       query: singerIds =>
         `/api/quartet?${singerIds.map(id => `singerIds=${id}`).join('&')}`,
     }),
+
+    getSongs: builder.query<SongSummary[], string>({
+      query: search => `/api/songs?search=${encodeURIComponent(search)}`,
+    }),
   }),
 })
 
@@ -78,4 +83,5 @@ export const {
   useAddSongMutation,
   useRemoveSongMutation,
   useGetQuartetSongsQuery,
+  useGetSongsQuery,
 } = api

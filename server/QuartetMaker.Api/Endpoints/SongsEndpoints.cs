@@ -13,7 +13,7 @@ public static class SongsEndpoints
             var query = db.Songs.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(s => s.Title.Contains(search));
+                query = query.Where(s => s.Title.ToLower().Contains(search.ToLower()));
 
             var songs = await query
                 .OrderBy(s => s.Title)

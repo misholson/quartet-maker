@@ -45,8 +45,11 @@ export default function LoginPage() {
     try {
       const result = await googleLogin({ idToken: credential }).unwrap()
       dispatch(setCredentials(result))
-      navigate('/my-songs', { replace: true })
-    } catch {
+      const redirect = sessionStorage.getItem('redirectAfterLogin') || '/my-songs'
+      sessionStorage.removeItem('redirectAfterLogin')
+      navigate(redirect, { replace: true })
+    } catch (e) {
+      console.debug(e);
       setError('Sign-in failed. Please try again.')
     }
   }

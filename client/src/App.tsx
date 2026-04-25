@@ -6,6 +6,7 @@ import { useAppSelector } from './store'
 import LoginPage from './pages/LoginPage'
 import MySongsPage from './pages/MySongsPage'
 import QuartetFinderPage from './pages/QuartetFinderPage'
+import JoinPage from './pages/JoinPage'
 
 const GlobalStyle = createGlobalStyle`
   *, *::before, *::after { box-sizing: border-box; }
@@ -20,7 +21,10 @@ const AppContainer = styled.div`
 
 function AuthLayout() {
   const token = useAppSelector(s => s.auth.token)
-  if (!token) return <Navigate to="/login" replace />
+  if (!token) {
+    sessionStorage.setItem('redirectAfterLogin', window.location.pathname)
+    return <Navigate to="/login" replace />
+  }
   return (
     <>
       <NavBar />
@@ -40,6 +44,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/my-songs" replace />} />
             <Route path="/my-songs" element={<MySongsPage />} />
             <Route path="/quartet" element={<QuartetFinderPage />} />
+            <Route path="/join/:inviteCode" element={<JoinPage />} />
           </Route>
         </Routes>
       </AppContainer>

@@ -6,6 +6,8 @@ import type {
   RepertoireEntry,
   AddSongRequest,
   QuartetSong,
+  QuartetDetail,
+  QuartetSummary,
   Part,
   LoginResponse,
 } from '../types/api'
@@ -22,7 +24,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['Singer'],
+  tagTypes: ['Singer', 'Quartet'],
   endpoints: builder => ({
     googleLogin: builder.mutation<LoginResponse, { idToken: string }>({
       query: body => ({
@@ -65,9 +67,28 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
     }),
 
-    getQuartetSongs: builder.query<QuartetSong[], number[]>({
-      query: singerIds =>
-        `/api/quartet?${singerIds.map(id => `singerIds=${id}`).join('&')}`,
+    createQuartet: builder.mutation<QuartetDetail, { name: string }>({
+      query: body => ({ url: '/api/quartets', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Quartet', id: 'LIST' }],
+    }),
+
+    getMyQuartets: builder.query<QuartetSummary[], void>({
+      query: () => '/api/quartets/my',
+      providesTags: [{ type: 'Quartet', id: 'LIST' }],
+    }),
+
+    getQuartet: builder.query<QuartetDetail, number>({
+      query: id => `/api/quartets/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Quartet', id }],
+    }),
+
+    joinQuartet: builder.mutation<QuartetDetail, string>({
+      query: inviteCode => ({ url: `/api/quartets/join/${inviteCode}`, method: 'POST' }),
+      invalidatesTags: [{ type: 'Quartet', id: 'LIST' }],
+    }),
+
+    getQuartetSongs: builder.query<QuartetSong[], number>({
+      query: quartetId => `/api/quartets/${quartetId}/songs`,
     }),
 
     getSongs: builder.query<SongSummary[], string>({
@@ -82,6 +103,10 @@ export const {
   useGetSingerQuery,
   useAddSongMutation,
   useRemoveSongMutation,
+  useCreateQuartetMutation,
+  useGetMyQuartetsQuery,
+  useGetQuartetQuery,
+  useJoinQuartetMutation,
   useGetQuartetSongsQuery,
   useGetSongsQuery,
 } = api

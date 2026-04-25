@@ -1,50 +1,161 @@
 import { useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { QRCodeSVG } from 'qrcode.react'
 import styled from 'styled-components'
-import { useGetSingersQuery, useGetQuartetSongsQuery } from '../store/apiSlice'
+import {
+  useGetMyQuartetsQuery,
+  useGetQuartetQuery,
+  useGetQuartetSongsQuery,
+  useCreateQuartetMutation,
+} from '../store/apiSlice'
 import type { Part, QuartetSong } from '../types/api'
 
 const PARTS: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
-
-const PART_COVERAGE_KEY: Record<Part, keyof QuartetSong['coverage']> = {
-  Tenor: 'tenor',
-  Lead: 'lead',
-  Baritone: 'baritone',
-  Bass: 'bass',
+const PART_KEY: Record<Part, keyof QuartetSong['coverage']> = {
+  Tenor: 'tenor', Lead: 'lead', Baritone: 'baritone', Bass: 'bass',
 }
 
-const SingerGrid = styled.div`
+const PageHeader = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+`
+
+const SmallButton = styled.button<{ $variant?: 'ghost' }>`
+  padding: 0.35rem 0.9rem;
+  font-size: 0.9rem;
+  background: ${({ $variant }) => ($variant === 'ghost' ? '#fff' : '#222')};
+  color: ${({ $variant }) => ($variant === 'ghost' ? '#444' : '#fff')};
+  border: 1px solid ${({ $variant }) => ($variant === 'ghost' ? '#ccc' : '#222')};
+  border-radius: 4px;
+  cursor: pointer;
+  &:hover { opacity: 0.85; }
+  &:disabled { opacity: 0.5; cursor: default; }
+`
+
+const CreateForm = styled.form`
+  display: flex;
   gap: 0.5rem;
+  margin-bottom: 1.25rem;
+`
+
+const NameInput = styled.input`
+  flex: 1;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  &:focus { outline: 2px solid #555; }
+  &:disabled { background: #f5f5f5; }
+`
+
+const QuartetList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   margin-bottom: 1.5rem;
 `
 
-const SingerChip = styled.label<{ $selected: boolean }>`
+const QuartetCard = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.9rem;
-  border: 2px solid ${({ $selected }) => ($selected ? '#222' : '#ccc')};
-  border-radius: 20px;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: ${({ $selected }) => ($selected ? '#222' : '#f8f8f8')};
+  color: ${({ $selected }) => ($selected ? '#fff' : '#111')};
+  border: 2px solid ${({ $selected }) => ($selected ? '#222' : '#e5e5e5')};
+  border-radius: 6px;
   cursor: pointer;
-  background: ${({ $selected }) => ($selected ? '#222' : '#fff')};
-  color: ${({ $selected }) => ($selected ? '#fff' : '#444')};
-  user-select: none;
-  transition: all 0.1s;
+  text-align: left;
+  font-size: 1rem;
+  transition: background 0.1s, border-color 0.1s;
   &:hover { border-color: #555; }
+`
+
+const CardMeta = styled.span<{ $selected: boolean }>`
+  font-size: 0.8rem;
+  color: ${({ $selected }) => ($selected ? '#aaa' : '#888')};
+`
+
+const Divider = styled.hr`
+  border: none;
+  border-top: 1px solid #e5e5e5;
+  margin: 1.5rem 0;
+`
+
+const DetailHeader = styled.h3`
+  margin: 0 0 0.75rem;
+`
+
+const MemberRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+`
+
+const MemberChip = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.7rem;
+  background: #f0f0f0;
+  border-radius: 20px;
+  font-size: 0.9rem;
+`
+
+const OwnerBadge = styled.span`
+  font-size: 0.68rem;
+  background: #222;
+  color: #fff;
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+`
+
+const InviteSection = styled.div`
+  margin-bottom: 1.5rem;
+`
+
+const InviteLabel = styled.p`
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+`
+
+const InviteRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+`
+
+const InviteLinkInput = styled.input`
+  flex: 1;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.82rem;
+  background: #f9f9f9;
+  color: #555;
+  cursor: default;
+  min-width: 0;
+`
+
+const SectionTitle = styled.h3`
+  margin: 1.5rem 0 0.5rem;
+`
+
+const Hint = styled.p`
+  color: #999;
+  font-style: italic;
 `
 
 const ResultTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-
-  th, td {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #e5e5e5;
-    text-align: left;
-  }
-
+  th, td { padding: 0.5rem 0.75rem; border: 1px solid #e5e5e5; text-align: left; }
   th { background: #f5f5f5; font-weight: 600; }
 `
 
@@ -53,36 +164,36 @@ const PartCell = styled.td<{ $covered: boolean }>`
   font-weight: ${({ $covered }) => ($covered ? '500' : 'normal')};
 `
 
-const SectionTitle = styled.h3`
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-`
-
-const Hint = styled.p`
-  color: #999;
-  font-style: italic;
-`
-
 export default function QuartetFinderPage() {
-  const { data: singers = [], isLoading } = useGetSingersQuery()
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
+  const location = useLocation()
+  const initialId = (location.state as { selectQuartetId?: number } | null)?.selectQuartetId ?? null
 
-  const selectedIdArray = Array.from(selectedIds).sort((a, b) => a - b)
-  const { data: songs = [], isFetching } = useGetQuartetSongsQuery(
-    selectedIdArray,
-    { skip: selectedIdArray.length === 0 },
-  )
+  const [selectedId, setSelectedId] = useState<number | null>(initialId)
+  const [showCreate, setShowCreate] = useState(false)
+  const [newName, setNewName] = useState('')
+  const [showQr, setShowQr] = useState(false)
+  const [copied, setCopied] = useState(false)
 
-  function toggle(id: number) {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
-      } else if (next.size < 4) {
-        next.add(id)
-      }
-      return next
-    })
+  const { data: myQuartets = [], isLoading: loadingList } = useGetMyQuartetsQuery()
+  const { data: quartet } = useGetQuartetQuery(selectedId!, { skip: selectedId === null })
+  const { data: songs = [], isFetching: fetchingSongs } = useGetQuartetSongsQuery(selectedId!, { skip: selectedId === null })
+  const [createQuartet, { isLoading: creating }] = useCreateQuartetMutation()
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newName.trim()) return
+    const result = await createQuartet({ name: newName.trim() }).unwrap()
+    setNewName('')
+    setShowCreate(false)
+    setSelectedId(result.id)
+  }
+
+  const inviteUrl = quartet ? `${window.location.origin}/join/${quartet.inviteCode}` : ''
+
+  function copyLink() {
+    navigator.clipboard.writeText(inviteUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
 
   const complete = songs.filter(s => s.isComplete)
@@ -90,48 +201,89 @@ export default function QuartetFinderPage() {
 
   return (
     <div>
-      <h2>Find a Quartet</h2>
-      <p>Select up to 4 singers to see which songs they can perform together.</p>
+      <PageHeader>
+        <h2 style={{ margin: 0 }}>Find a Quartet</h2>
+        <SmallButton $variant={showCreate ? 'ghost' : undefined} onClick={() => setShowCreate(v => !v)}>
+          {showCreate ? 'Cancel' : '+ New Quartet'}
+        </SmallButton>
+      </PageHeader>
 
-      {isLoading ? (
-        <Hint>Loading singers…</Hint>
+      {showCreate && (
+        <CreateForm onSubmit={handleCreate}>
+          <NameInput
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            placeholder="Quartet name"
+            autoFocus
+            disabled={creating}
+          />
+          <SmallButton type="submit" disabled={creating || !newName.trim()}>
+            {creating ? 'Creating…' : 'Create'}
+          </SmallButton>
+        </CreateForm>
+      )}
+
+      {loadingList ? (
+        <Hint>Loading…</Hint>
+      ) : myQuartets.length === 0 && !showCreate ? (
+        <Hint>No quartets yet — create one to get started.</Hint>
       ) : (
-        <SingerGrid>
-          {singers.map(singer => (
-            <SingerChip key={singer.id} $selected={selectedIds.has(singer.id)}>
-              <input
-                type="checkbox"
-                checked={selectedIds.has(singer.id)}
-                onChange={() => toggle(singer.id)}
-                style={{ display: 'none' }}
-              />
-              {singer.name}
-            </SingerChip>
+        <QuartetList>
+          {myQuartets.map(q => (
+            <QuartetCard key={q.id} $selected={q.id === selectedId} onClick={() => setSelectedId(q.id)}>
+              <span>{q.name}</span>
+              <CardMeta $selected={q.id === selectedId}>
+                {q.memberCount} {q.memberCount === 1 ? 'singer' : 'singers'}
+              </CardMeta>
+            </QuartetCard>
           ))}
-        </SingerGrid>
+        </QuartetList>
       )}
 
-      {selectedIdArray.length === 0 && !isLoading && (
-        <Hint>Select singers above to see matching songs.</Hint>
-      )}
-
-      {isFetching && <Hint>Loading songs…</Hint>}
-
-      {!isFetching && selectedIdArray.length > 0 && songs.length === 0 && (
-        <Hint>No songs in common.</Hint>
-      )}
-
-      {!isFetching && complete.length > 0 && (
+      {quartet && (
         <>
-          <SectionTitle>Ready to Sing ({complete.length})</SectionTitle>
-          <SongTable songs={complete} />
-        </>
-      )}
+          <Divider />
+          <DetailHeader>{quartet.name}</DetailHeader>
 
-      {!isFetching && incomplete.length > 0 && (
-        <>
-          <SectionTitle>Missing Parts ({incomplete.length})</SectionTitle>
-          <SongTable songs={incomplete} />
+          <MemberRow>
+            {quartet.members.map(m => (
+              <MemberChip key={m.singerId}>
+                {m.name}
+                {m.isOwner && <OwnerBadge>owner</OwnerBadge>}
+              </MemberChip>
+            ))}
+          </MemberRow>
+
+          <InviteSection>
+            <InviteLabel>Invite singers:</InviteLabel>
+            <InviteRow>
+              <InviteLinkInput readOnly value={inviteUrl} onClick={e => (e.target as HTMLInputElement).select()} />
+              <SmallButton $variant="ghost" onClick={copyLink}>{copied ? 'Copied!' : 'Copy'}</SmallButton>
+              <SmallButton $variant="ghost" onClick={() => setShowQr(v => !v)}>QR</SmallButton>
+            </InviteRow>
+            {showQr && <QRCodeSVG value={inviteUrl} size={180} style={{ display: 'block', margin: '0.75rem 0' }} />}
+          </InviteSection>
+
+          {fetchingSongs ? (
+            <Hint>Loading songs…</Hint>
+          ) : songs.length === 0 ? (
+            <Hint>No songs in common yet — members need to add songs to their repertoire.</Hint>
+          ) : (
+            <>
+              {complete.length > 0 && (
+                <>
+                  <SectionTitle>Ready to Sing ({complete.length})</SectionTitle>
+                  <SongTable songs={complete} />
+                </>
+              )}
+              {incomplete.length > 0 && (
+                <>
+                  <SectionTitle>Missing Parts ({incomplete.length})</SectionTitle>
+                  <SongTable songs={incomplete} />
+                </>
+              )}
+            </>
+          )}
         </>
       )}
     </div>
@@ -152,10 +304,10 @@ function SongTable({ songs }: { songs: QuartetSong[] }) {
           <tr key={song.title}>
             <td>{song.title}</td>
             {PARTS.map(p => {
-              const singers = song.coverage[PART_COVERAGE_KEY[p]]
+              const names = song.coverage[PART_KEY[p]]
               return (
-                <PartCell key={p} $covered={singers.length > 0}>
-                  {singers.join(', ') || '—'}
+                <PartCell key={p} $covered={names.length > 0}>
+                  {names.join(', ') || '—'}
                 </PartCell>
               )
             })}

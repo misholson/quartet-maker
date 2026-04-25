@@ -8,6 +8,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Singer> Singers => Set<Singer>();
     public DbSet<Song> Songs => Set<Song>();
     public DbSet<SingerSong> SingerSongs => Set<SingerSong>();
+    public DbSet<Quartet> Quartets => Set<Quartet>();
+    public DbSet<QuartetMember> QuartetMembers => Set<QuartetMember>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,5 +42,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<SingerSong>()
             .Property(ss => ss.Part)
             .HasConversion<string>();
+
+        modelBuilder.Entity<QuartetMember>()
+            .HasKey(qm => new { qm.QuartetId, qm.SingerId });
+
+        modelBuilder.Entity<QuartetMember>()
+            .HasOne(qm => qm.Quartet)
+            .WithMany(q => q.Members)
+            .HasForeignKey(qm => qm.QuartetId);
+
+        modelBuilder.Entity<QuartetMember>()
+            .HasOne(qm => qm.Singer)
+            .WithMany()
+            .HasForeignKey(qm => qm.SingerId);
+
+        modelBuilder.Entity<Quartet>()
+            .HasIndex(q => q.InviteCode)
+            .IsUnique();
     }
 }

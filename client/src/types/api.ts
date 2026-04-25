@@ -41,6 +41,25 @@ export interface LoginResponse {
   name: string
 }
 
+export interface QuartetMemberInfo {
+  singerId: number
+  name: string
+  isOwner: boolean
+}
+
+export interface QuartetDetail {
+  id: number
+  name: string
+  inviteCode: string
+  members: QuartetMemberInfo[]
+}
+
+export interface QuartetSummary {
+  id: number
+  name: string
+  memberCount: number
+}
+
 export interface SongSummary {
   id: number
   title: string

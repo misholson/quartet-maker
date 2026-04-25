@@ -6,15 +6,31 @@ import type {
   AddSongRequest,
   QuartetSong,
   Part,
+  LoginResponse,
 } from '../types/api'
 
 const API_BASE = 'http://localhost:5143'
 
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: API_BASE }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_BASE,
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as { auth: { token: string | null } }).auth.token
+      if (token) headers.set('Authorization', `Bearer ${token}`)
+      return headers
+    },
+  }),
   tagTypes: ['Singer'],
   endpoints: builder => ({
+    googleLogin: builder.mutation<LoginResponse, { idToken: string }>({
+      query: body => ({
+        url: '/api/auth/google',
+        method: 'POST',
+        body,
+      }),
+    }),
+
     getSingers: builder.query<SingerSummary[], void>({
       query: () => '/api/singers',
       providesTags: result =>
@@ -56,6 +72,7 @@ export const api = createApi({
 })
 
 export const {
+  useGoogleLoginMutation,
   useGetSingersQuery,
   useGetSingerQuery,
   useAddSongMutation,

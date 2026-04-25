@@ -87,7 +87,7 @@ const StatusMessage = styled.p`
 `
 
 export default function MySongsPage() {
-  const currentSingerId = useAppSelector(s => s.singers.currentSingerId)
+  const currentSingerId = useAppSelector(s => s.auth.singerId!)
   const { data: singer, isLoading, isError } = useGetSingerQuery(currentSingerId)
   const [addSong, { isLoading: isAdding }] = useAddSongMutation()
   const [removeSong] = useRemoveSongMutation()

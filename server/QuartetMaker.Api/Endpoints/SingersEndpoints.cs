@@ -9,7 +9,7 @@ public static class SingersEndpoints
 {
     public static IEndpointRouteBuilder MapSingersEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/singers").WithTags("Singers");
+        var group = app.MapGroup("/api/singers").WithTags("Singers").RequireAuthorization();
 
         group.MapGet("/", async (AppDbContext db) =>
         {

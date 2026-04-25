@@ -24,6 +24,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(s => s.SingerSongs)
             .HasForeignKey(ss => ss.SongId);
 
+        modelBuilder.Entity<Singer>()
+            .HasIndex(s => s.GoogleId)
+            .IsUnique()
+            .HasFilter("[GoogleId] IS NOT NULL");
+
         modelBuilder.Entity<Song>()
             .HasIndex(s => s.Title)
             .IsUnique();

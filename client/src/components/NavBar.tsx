@@ -1,5 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useAppDispatch, useAppSelector } from '../store'
+import { logout } from '../store/authSlice'
 
 const Nav = styled.nav`
   display: flex;
@@ -35,12 +37,39 @@ const StyledLink = styled(NavLink)`
   }
 `
 
+const UserName = styled.span`
+  font-size: 0.9rem;
+  color: #444;
+`
+
+const LogoutButton = styled.button`
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #555;
+  &:hover { background: #f5f5f5; }
+`
+
 export default function NavBar() {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const name = useAppSelector(s => s.auth.name)
+
+  function handleLogout() {
+    dispatch(logout())
+    navigate('/login', { replace: true })
+  }
+
   return (
     <Nav>
       <Title>Quartet Maker</Title>
       <StyledLink to="/my-songs">My Songs</StyledLink>
       <StyledLink to="/quartet">Find a Quartet</StyledLink>
+      {name && <UserName>{name}</UserName>}
+      <LogoutButton onClick={handleLogout}>Sign out</LogoutButton>
     </Nav>
   )
 }

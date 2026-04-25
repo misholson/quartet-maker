@@ -41,7 +41,8 @@ public static class QuartetEndpoints
             return Results.Ok(songs);
         })
         .WithTags("Quartet")
-        .WithName("GetQuartetSongs");
+        .WithName("GetQuartetSongs")
+        .RequireAuthorization();
 
         return app;
     }

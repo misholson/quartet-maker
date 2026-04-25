@@ -1,11 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux'
 import { api } from './apiSlice'
-import singersReducer from './singersSlice'
+import authReducer from './authSlice'
 
 export const store = configureStore({
   reducer: {
-    singers: singersReducer,
+    auth: authReducer,
     [api.reducerPath]: api.reducer,
   },
   middleware: getDefaultMiddleware =>

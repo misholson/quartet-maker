@@ -35,6 +35,12 @@ export interface PartCoverage {
   bass: string[]
 }
 
+export interface LoginResponse {
+  token: string
+  singerId: number
+  name: string
+}
+
 export interface QuartetSong {
   title: string
   arranger: string | null

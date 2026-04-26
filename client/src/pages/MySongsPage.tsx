@@ -77,6 +77,43 @@ const PreferredRow = styled.div`
   color: #555;
 `
 
+const Section = styled.div`
+  margin-bottom: 1.5rem;
+`
+
+const SectionHeading = styled.h3<{ $part: Part }>`
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #555;
+  margin: 0 0 0.25rem;
+  padding: 0.25rem 0.6rem;
+  background: ${({ $part }) => PART_COLORS[$part]};
+  border-radius: 4px;
+  display: inline-block;
+`
+
+const SortBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+`
+
+const SortButton = styled.button<{ $active: boolean }>`
+  background: ${({ $active }) => ($active ? '#222' : 'none')};
+  color: ${({ $active }) => ($active ? '#fff' : '#555')};
+  border: 1px solid ${({ $active }) => ($active ? '#222' : '#ccc')};
+  border-radius: 4px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  &:hover:not([data-active='true']) { border-color: #888; color: #111; }
+`
+
 const Empty = styled.p`
   color: #999;
   font-style: italic;
@@ -98,6 +135,20 @@ const SongInfo = styled.div`
   min-width: 0;
 `
 
+type SortField = 'part' | 'title' | 'arranger' | 'voicing'
+
+const SORT_LABELS: Record<SortField, string> = {
+  part: 'Part', title: 'Title', arranger: 'Arranger', voicing: 'Voicing',
+}
+
+const PART_ORDER: Record<Part, number> = { Tenor: 0, Lead: 1, Baritone: 2, Bass: 3 }
+
+function orderedParts(preferred: Part | null): Part[] {
+  const base: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
+  if (!preferred) return base
+  return [preferred, ...base.filter(p => p !== preferred)]
+}
+
 function songMeta(arranger: string | null, voicing: string | null): string {
   return [arranger, voicing].filter(Boolean).join(' · ')
 }
@@ -112,6 +163,7 @@ export default function MySongsPage() {
   const [inputValue, setInputValue] = useState('')
   const [selectedSong, setSelectedSong] = useState<SongSummary | null>(null)
   const [part, setPart] = useState<Part>('Tenor')
+  const [sortBy, setSortBy] = useState<SortField>('title')
   const partInitialized = useRef(false)
 
   useEffect(() => {
@@ -151,26 +203,68 @@ export default function MySongsPage() {
           {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
         </Select>
       </PreferredRow>
+      <SortBar>
+        Sort by:
+        {(['part', 'title', 'arranger', 'voicing'] as SortField[]).map(f => (
+          <SortButton key={f} $active={sortBy === f} onClick={() => setSortBy(f)}>
+            {SORT_LABELS[f]}
+          </SortButton>
+        ))}
+      </SortBar>
       {singer.repertoire.length === 0 ? (
         <Empty>No songs yet — add one below.</Empty>
+      ) : sortBy === 'part' ? (
+        orderedParts(singer.preferredPart).map(p => {
+          const entries = [...singer.repertoire.filter(e => e.part === p)].sort((a, b) => a.songTitle.localeCompare(b.songTitle))
+          if (entries.length === 0) return null
+          return (
+            <Section key={p}>
+              <SectionHeading $part={p}>{p}</SectionHeading>
+              {entries.map(entry => (
+                <SongRow key={`${entry.songId}-${entry.part}`}>
+                  <SongInfo>
+                    <span>{entry.songTitle}</span>
+                    {songMeta(entry.arranger, entry.voicing) && (
+                      <SongMeta>{songMeta(entry.arranger, entry.voicing)}</SongMeta>
+                    )}
+                  </SongInfo>
+                  <RemoveButton
+                    onClick={() => removeSong({ singerId: currentSingerId, songId: entry.songId, part: entry.part })}
+                    aria-label={`Remove ${entry.songTitle}`}
+                  >✕</RemoveButton>
+                </SongRow>
+              ))}
+            </Section>
+          )
+        })
       ) : (
-        singer.repertoire.map(entry => (
-          <SongRow key={`${entry.songId}-${entry.part}`}>
-            <SongInfo>
-              <span>{entry.songTitle}</span>
-              {songMeta(entry.arranger, entry.voicing) && (
-                <SongMeta>{songMeta(entry.arranger, entry.voicing)}</SongMeta>
-              )}
-            </SongInfo>
-            <PartBadge $part={entry.part}>{entry.part}</PartBadge>
-            <RemoveButton
-              onClick={() => removeSong({ singerId: currentSingerId, songId: entry.songId, part: entry.part })}
-              aria-label={`Remove ${entry.songTitle}`}
-            >
-              ✕
-            </RemoveButton>
-          </SongRow>
-        ))
+        [...singer.repertoire]
+          .sort((a, b) => {
+            const va = sortBy === 'title' ? a.songTitle
+              : sortBy === 'arranger' ? (a.arranger ?? '￿')
+              : sortBy === 'voicing'  ? (a.voicing  ?? '￿')
+              : ''
+            const vb = sortBy === 'title' ? b.songTitle
+              : sortBy === 'arranger' ? (b.arranger ?? '￿')
+              : sortBy === 'voicing'  ? (b.voicing  ?? '￿')
+              : ''
+            return va.localeCompare(vb) || a.songTitle.localeCompare(b.songTitle)
+          })
+          .map(entry => (
+            <SongRow key={`${entry.songId}-${entry.part}`}>
+              <SongInfo>
+                <span>{entry.songTitle}</span>
+                {songMeta(entry.arranger, entry.voicing) && (
+                  <SongMeta>{songMeta(entry.arranger, entry.voicing)}</SongMeta>
+                )}
+              </SongInfo>
+              <PartBadge $part={entry.part}>{entry.part}</PartBadge>
+              <RemoveButton
+                onClick={() => removeSong({ singerId: currentSingerId, songId: entry.songId, part: entry.part })}
+                aria-label={`Remove ${entry.songTitle}`}
+              >✕</RemoveButton>
+            </SongRow>
+          ))
       )}
       <Form onSubmit={handleSubmit}>
         <SongCombobox

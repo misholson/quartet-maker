@@ -6,8 +6,9 @@ import { logout } from '../store/authSlice'
 const Nav = styled.nav`
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 0;
   border-bottom: 2px solid #222;
   margin-bottom: 1.5rem;
 `
@@ -17,14 +18,18 @@ const Title = styled.h1`
   margin-right: auto;
   font-size: 1.3rem;
   letter-spacing: -0.5px;
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
 `
 
 const StyledLink = styled(NavLink)`
   text-decoration: none;
   color: #666;
-  padding: 0.3rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   border-radius: 4px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 
   &.active {
     color: #111;
@@ -38,18 +43,20 @@ const StyledLink = styled(NavLink)`
 `
 
 const UserName = styled.span`
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #444;
+  margin-left: auto;
 `
 
 const LogoutButton = styled.button`
   background: none;
   border: 1px solid #ccc;
   border-radius: 4px;
-  padding: 0.25rem 0.6rem;
+  padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
   cursor: pointer;
   color: #555;
+  white-space: nowrap;
   &:hover { background: #f5f5f5; }
 `
 

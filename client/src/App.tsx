@@ -19,6 +19,9 @@ const AppContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 0 1.25rem;
+  @media (max-width: 480px) {
+    padding: 0 0.75rem;
+  }
 `
 
 function AuthLayout() {

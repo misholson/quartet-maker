@@ -45,6 +45,7 @@ const RemoveButton = styled.button`
 
 const Form = styled.form`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
 `
@@ -107,6 +108,7 @@ const SectionHeading = styled.h3<{ $part: Part }>`
 const SortBar = styled.div`
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.35rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;

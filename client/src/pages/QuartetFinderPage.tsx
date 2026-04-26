@@ -37,6 +37,7 @@ const SmallButton = styled.button<{ $variant?: 'ghost' }>`
 
 const CreateForm = styled.form`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
 `
@@ -74,6 +75,7 @@ const QuartetCard = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   width: 100%;
   padding: 0.6rem 1rem;
   background: ${({ $selected }) => ($selected ? '#222' : '#f8f8f8')};
@@ -90,6 +92,12 @@ const QuartetCard = styled.button<{ $selected: boolean }>`
 const CardMeta = styled.span<{ $selected: boolean }>`
   font-size: 0.8rem;
   color: ${({ $selected }) => ($selected ? '#aaa' : '#888')};
+  text-align: right;
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+    text-align: left;
+    margin-top: 0.15rem;
+  }
 `
 
 const Divider = styled.hr`
@@ -139,6 +147,7 @@ const InviteLabel = styled.p`
 
 const InviteRow = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 `
@@ -164,8 +173,14 @@ const Hint = styled.p`
   font-style: italic;
 `
 
+const TableScroller = styled.div`
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+`
+
 const ResultTable = styled.table`
   width: 100%;
+  min-width: 480px;
   border-collapse: collapse;
   font-size: 0.95rem;
   th, td { padding: 0.5rem 0.75rem; border: 1px solid #e5e5e5; text-align: left; }
@@ -340,28 +355,30 @@ export default function QuartetFinderPage() {
 
 function SongTable({ songs }: { songs: QuartetSong[] }) {
   return (
-    <ResultTable>
-      <thead>
-        <tr>
-          <th>Song</th>
-          {PARTS.map(p => <th key={p}>{p}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {songs.map(song => (
-          <tr key={song.title}>
-            <td>{song.title}</td>
-            {PARTS.map(p => {
-              const names = song.coverage[PART_KEY[p]]
-              return (
-                <PartCell key={p} $covered={names.length > 0}>
-                  {names.join(', ') || '—'}
-                </PartCell>
-              )
-            })}
+    <TableScroller>
+      <ResultTable>
+        <thead>
+          <tr>
+            <th>Song</th>
+            {PARTS.map(p => <th key={p}>{p}</th>)}
           </tr>
-        ))}
-      </tbody>
-    </ResultTable>
+        </thead>
+        <tbody>
+          {songs.map(song => (
+            <tr key={song.title}>
+              <td>{song.title}</td>
+              {PARTS.map(p => {
+                const names = song.coverage[PART_KEY[p]]
+                return (
+                  <PartCell key={p} $covered={names.length > 0}>
+                    {names.join(', ') || '—'}
+                  </PartCell>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </ResultTable>
+    </TableScroller>
   )
 }

@@ -6,6 +6,10 @@ import type { SongSummary } from '../types/api'
 const Wrapper = styled.div`
   position: relative;
   flex: 1;
+  min-width: 180px;
+  @media (max-width: 480px) {
+    flex-basis: 100%;
+  }
 `
 
 const Input = styled.input`

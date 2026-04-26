@@ -9,6 +9,7 @@ import {
   useCreateQuartetMutation,
 } from '../store/apiSlice'
 import type { Part, QuartetSong } from '../types/api'
+import { randomQuartetName } from '../utils/randomQuartetName'
 
 const PARTS: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
 const PART_KEY: Record<Part, keyof QuartetSong['coverage']> = {
@@ -38,6 +39,18 @@ const CreateForm = styled.form`
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
+`
+
+const RerollButton = styled.button`
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #555;
+  line-height: 1;
+  &:hover { border-color: #888; color: #111; }
 `
 
 const NameInput = styled.input`
@@ -171,6 +184,13 @@ export default function QuartetFinderPage() {
   const [selectedId, setSelectedId] = useState<number | null>(initialId)
   const [showCreate, setShowCreate] = useState(false)
   const [newName, setNewName] = useState('')
+
+  function toggleCreate() {
+    setShowCreate(v => {
+      if (!v) setNewName(randomQuartetName())
+      return !v
+    })
+  }
   const [showQr, setShowQr] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -181,8 +201,8 @@ export default function QuartetFinderPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
-    if (!newName.trim()) return
-    const result = await createQuartet({ name: newName.trim() }).unwrap()
+    const name = newName.trim() || randomQuartetName()
+    const result = await createQuartet({ name }).unwrap()
     setNewName('')
     setShowCreate(false)
     setSelectedId(result.id)
@@ -203,7 +223,7 @@ export default function QuartetFinderPage() {
     <div>
       <PageHeader>
         <h2 style={{ margin: 0 }}>Find a Quartet</h2>
-        <SmallButton $variant={showCreate ? 'ghost' : undefined} onClick={() => setShowCreate(v => !v)}>
+        <SmallButton $variant={showCreate ? 'ghost' : undefined} onClick={toggleCreate}>
           {showCreate ? 'Cancel' : '+ New Quartet'}
         </SmallButton>
       </PageHeader>
@@ -217,7 +237,13 @@ export default function QuartetFinderPage() {
             autoFocus
             disabled={creating}
           />
-          <SmallButton type="submit" disabled={creating || !newName.trim()}>
+          <RerollButton
+            type="button"
+            title="New random name"
+            onClick={() => setNewName(randomQuartetName())}
+            disabled={creating}
+          >↻</RerollButton>
+          <SmallButton type="submit" disabled={creating}>
             {creating ? 'Creating…' : 'Create'}
           </SmallButton>
         </CreateForm>

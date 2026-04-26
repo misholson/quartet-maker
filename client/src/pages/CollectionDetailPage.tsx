@@ -277,6 +277,10 @@ export default function CollectionDetailPage() {
   if (isLoading) return <StatusMessage>Loading…</StatusMessage>
   if (isError || !collection) return <StatusMessage>Collection not found.</StatusMessage>
 
+  const inRepertoireIds = new Set(
+    singer?.repertoire.filter(e => e.part === importPart).map(e => e.songId) ?? []
+  )
+
   return (
     <div>
       <BackLink to="/collections">← Collections</BackLink>
@@ -342,8 +346,12 @@ export default function CollectionDetailPage() {
               </SongInfo>
               <RowActions>
                 <AddToRepertoireRow>
-                  <SmallButton $ghost onClick={() => handleAddToRepertoire(song.title, song.arranger, song.voicing)}>
-                    + My Songs
+                  <SmallButton
+                    $ghost
+                    onClick={() => handleAddToRepertoire(song.title, song.arranger, song.voicing)}
+                    disabled={inRepertoireIds.has(song.songId)}
+                  >
+                    {inRepertoireIds.has(song.songId) ? 'In My Songs' : '+ My Songs'}
                   </SmallButton>
                 </AddToRepertoireRow>
                 {isOwner && (

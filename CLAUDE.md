@@ -11,6 +11,10 @@ A web application that helps groups of barbershop singers find songs they all kn
 - **Frontend:** React 19 + TypeScript, Redux Toolkit, Styled Components, React Router v7, Vite
 - **Backend:** .NET 10 Minimal API (EF Core 10 + SQLite)
 
+## git
+
+If in the main branch, create a new branch before making changes.
+
 ## Commands
 
 **Frontend** — run from `client/`:

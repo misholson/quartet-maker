@@ -7,37 +7,32 @@ public static class Seeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
+        int seedSingerId;
         if (!await db.Singers.AnyAsync())
-            await SeedSingersAsync(db);
+            seedSingerId = await SeedSingersAsync(db);
+        else
+            seedSingerId = await db.Singers.Select(s => s.Id).FirstAsync();
 
         if (!await db.Collections.AnyAsync())
-            await SeedCollectionsAsync(db);
+            await SeedCollectionsAsync(db, seedSingerId);
     }
 
-    private static async Task SeedSingersAsync(AppDbContext db)
+    private static async Task<int> SeedSingersAsync(AppDbContext db)
     {
-        var singers = new Singer[]
-        {
-            new() { Id = 1, Name = "Seed" }
-        };
+        var singer = new Singer { Name = "Admin" };
+        var song = new Song { Title = "Hello My Baby", Arranger = "Howard Emerson Brooks", Voicing = Voicing.TTBB };
 
-        var songs = new Song[]
-        {
-            new() { Id = 1, Title = "Hello My Baby",     Arranger = "Howard Emerson Brooks", Voicing = Voicing.TTBB }
-        };
-
-        var singerSongs = new SingerSong[]
-        {
-            new() { SingerId = 1, SongId = 1, Part = Part.Tenor }
-        };
-
-        db.Singers.AddRange(singers);
-        db.Songs.AddRange(songs);
-        db.SingerSongs.AddRange(singerSongs);
+        db.Singers.Add(singer);
+        db.Songs.Add(song);
         await db.SaveChangesAsync();
+
+        db.SingerSongs.Add(new SingerSong { SingerId = singer.Id, SongId = song.Id, Part = Part.Tenor });
+        await db.SaveChangesAsync();
+
+        return singer.Id;
     }
 
-    private static async Task SeedCollectionsAsync(AppDbContext db)
+    private static async Task SeedCollectionsAsync(AppDbContext db, int seedSingerId)
     {
         var csvDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Seeds", "Collections");
         if (!Directory.Exists(csvDir)) return;
@@ -50,7 +45,7 @@ public static class Seeder
             var collection = new Collection
             {
                 Name = collectionName,
-                CreatedById = 1,
+                CreatedById = seedSingerId,
             };
             db.Collections.Add(collection);
             await db.SaveChangesAsync();

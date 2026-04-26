@@ -14,7 +14,7 @@ var isSqlite = connectionString.TrimStart().StartsWith("Data Source=", StringCom
 builder.Services.AddDbContext<AppDbContext>(opt =>
 {
     if (isSqlite) opt.UseSqlite(connectionString);
-    else opt.UseSqlServer(connectionString);
+    else opt.UseSqlServer(connectionString, sql => sql.EnableRetryOnFailure());
 });
 
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()

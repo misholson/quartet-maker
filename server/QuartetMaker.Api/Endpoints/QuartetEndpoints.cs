@@ -23,7 +23,7 @@ public static class QuartetEndpoints
             {
                 Name = req.Name,
                 InviteCode = Guid.NewGuid().ToString("N")[..10],
-                Members = [new QuartetMember { SingerId = singerId, IsOwner = true }],
+                Members = [new QuartetMember { SingerId = singerId, IsOwner = true, JoinedAt = DateTime.UtcNow }],
             };
             db.Quartets.Add(quartet);
             await db.SaveChangesAsync();
@@ -39,7 +39,10 @@ public static class QuartetEndpoints
             var singerId = GetSingerId(user);
             var quartets = await db.Quartets
                 .Where(q => q.Members.Any(qm => qm.SingerId == singerId))
-                .Select(q => new QuartetSummaryDto(q.Id, q.Name, q.Members.Count))
+                .OrderByDescending(q => q.Members.Where(qm => qm.SingerId == singerId).Select(qm => qm.JoinedAt).FirstOrDefault())
+                .Select(q => new QuartetSummaryDto(
+                    q.Id, q.Name, q.Members.Count,
+                    q.Members.Where(qm => qm.SingerId == singerId).Select(qm => qm.JoinedAt).FirstOrDefault()))
                 .ToListAsync();
             return Results.Ok(quartets);
         })
@@ -68,7 +71,7 @@ public static class QuartetEndpoints
 
             // INSERT OR IGNORE is atomic — safe against concurrent duplicate requests
             await db.Database.ExecuteSqlAsync(
-                $"INSERT OR IGNORE INTO QuartetMembers (QuartetId, SingerId, IsOwner) VALUES ({quartet.Id}, {singerId}, 0)");
+                $"INSERT OR IGNORE INTO QuartetMembers (QuartetId, SingerId, IsOwner, JoinedAt) VALUES ({quartet.Id}, {singerId}, 0, datetime('now'))");
 
             var members = await db.QuartetMembers
                 .Where(qm => qm.QuartetId == quartet.Id)

@@ -7,4 +7,5 @@ public class QuartetMember
     public int SingerId { get; set; }
     public Singer Singer { get; set; } = null!;
     public bool IsOwner { get; set; }
+    public DateTime JoinedAt { get; set; }
 }

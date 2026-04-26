@@ -25,7 +25,7 @@ public record SongSummaryDto(int Id, string Title, string? Arranger, Voicing? Vo
 public record CreateQuartetRequest(string Name);
 public record QuartetMemberDto(int SingerId, string Name, bool IsOwner);
 public record QuartetDto(int Id, string Name, string InviteCode, IEnumerable<QuartetMemberDto> Members);
-public record QuartetSummaryDto(int Id, string Name, int MemberCount);
+public record QuartetSummaryDto(int Id, string Name, int MemberCount, DateTime JoinedAt);
 
 public record CollectionSummaryDto(int Id, string Name, string? Description, string CreatedBy, int CreatedById, int SongCount);
 public record CollectionSongDto(int SongId, string Title, string? Arranger, Voicing? Voicing);

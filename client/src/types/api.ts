@@ -60,6 +60,7 @@ export interface QuartetSummary {
   id: number
   name: string
   memberCount: number
+  joinedAt: string
 }
 
 export interface CollectionSong {

@@ -175,12 +175,11 @@ const Hint = styled.p`
 
 const TableScroller = styled.div`
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  @media (max-width: 600px) { display: none; }
 `
 
 const ResultTable = styled.table`
   width: 100%;
-  min-width: 480px;
   border-collapse: collapse;
   font-size: 0.95rem;
   th, td { padding: 0.5rem 0.75rem; border: 1px solid #e5e5e5; text-align: left; }
@@ -190,6 +189,44 @@ const ResultTable = styled.table`
 const PartCell = styled.td<{ $covered: boolean }>`
   color: ${({ $covered }) => ($covered ? '#166534' : '#d1d5db')};
   font-weight: ${({ $covered }) => ($covered ? '500' : 'normal')};
+`
+
+const CardList = styled.div`
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  @media (max-width: 600px) { display: flex; }
+`
+
+const SongCard = styled.div`
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 0.65rem 0.75rem;
+`
+
+const SongCardTitle = styled.div`
+  font-weight: 600;
+  margin-bottom: 0.45rem;
+`
+
+const SongCardParts = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.75rem;
+`
+
+const SongCardPart = styled.div<{ $covered: boolean }>`
+  font-size: 0.85rem;
+  color: ${({ $covered }) => ($covered ? '#111' : '#bbb')};
+`
+
+const PartLabel = styled.span`
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  margin-right: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 `
 
 function formatJoinedAt(iso: string): string {
@@ -355,30 +392,51 @@ export default function QuartetFinderPage() {
 
 function SongTable({ songs }: { songs: QuartetSong[] }) {
   return (
-    <TableScroller>
-      <ResultTable>
-        <thead>
-          <tr>
-            <th>Song</th>
-            {PARTS.map(p => <th key={p}>{p}</th>)}
-          </tr>
-        </thead>
-        <tbody>
-          {songs.map(song => (
-            <tr key={song.title}>
-              <td>{song.title}</td>
+    <>
+      <TableScroller>
+        <ResultTable>
+          <thead>
+            <tr>
+              <th>Song</th>
+              {PARTS.map(p => <th key={p}>{p}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {songs.map(song => (
+              <tr key={song.title}>
+                <td>{song.title}</td>
+                {PARTS.map(p => {
+                  const names = song.coverage[PART_KEY[p]]
+                  return (
+                    <PartCell key={p} $covered={names.length > 0}>
+                      {names.join(', ') || '—'}
+                    </PartCell>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </ResultTable>
+      </TableScroller>
+
+      <CardList>
+        {songs.map(song => (
+          <SongCard key={song.title}>
+            <SongCardTitle>{song.title}</SongCardTitle>
+            <SongCardParts>
               {PARTS.map(p => {
                 const names = song.coverage[PART_KEY[p]]
                 return (
-                  <PartCell key={p} $covered={names.length > 0}>
+                  <SongCardPart key={p} $covered={names.length > 0}>
+                    <PartLabel>{p}</PartLabel>
                     {names.join(', ') || '—'}
-                  </PartCell>
+                  </SongCardPart>
                 )
               })}
-            </tr>
-          ))}
-        </tbody>
-      </ResultTable>
-    </TableScroller>
+            </SongCardParts>
+          </SongCard>
+        ))}
+      </CardList>
+    </>
   )
 }

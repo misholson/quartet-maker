@@ -21,7 +21,7 @@ public static class CollectionsEndpoints
             var collections = await query
                 .OrderBy(c => c.Name)
                 .Select(c => new CollectionSummaryDto(
-                    c.Id, c.Name, c.Description, c.CreatedBy.Name, c.CreatedById,
+                    c.Id, c.Name, c.Description, c.CreatedBy.Nickname ?? c.CreatedBy.Name, c.CreatedById,
                     c.CollectionSongs.Count))
                 .ToListAsync();
             return Results.Ok(collections);
@@ -45,7 +45,7 @@ public static class CollectionsEndpoints
 
             return Results.Created($"/api/collections/{collection.Id}",
                 new CollectionDto(collection.Id, collection.Name, collection.Description,
-                    singer.Name, singerId, []));
+                    singer.Nickname ?? singer.Name, singerId, []));
         })
         .WithName("CreateCollection");
 
@@ -63,7 +63,7 @@ public static class CollectionsEndpoints
 
             return Results.Ok(new CollectionDto(
                 collection.Id, collection.Name, collection.Description,
-                collection.CreatedBy.Name, collection.CreatedById, songs));
+                collection.CreatedBy.Nickname ?? collection.CreatedBy.Name, collection.CreatedById, songs));
         })
         .WithName("GetCollection");
 

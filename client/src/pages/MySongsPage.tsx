@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
-import { useAppSelector } from '../store'
-import { useGetSingerQuery, useAddSongMutation, useRemoveSongMutation, useSetPreferredPartMutation } from '../store/apiSlice'
+import { useAppDispatch, useAppSelector } from '../store'
+import { useGetSingerQuery, useAddSongMutation, useRemoveSongMutation, useSetPreferredPartMutation, useSetNicknameMutation } from '../store/apiSlice'
+import { setName } from '../store/authSlice'
 import type { Part, SongSummary } from '../types/api'
 import SongCombobox from '../components/SongCombobox'
 
@@ -68,13 +69,22 @@ const AddButton = styled.button`
   &:disabled { opacity: 0.5; cursor: default; }
 `
 
-const PreferredRow = styled.div`
+const SettingsRow = styled.div`
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   font-size: 0.9rem;
   color: #555;
+`
+
+const NicknameInput = styled.input`
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  width: 14rem;
+  &:focus { outline: 2px solid #555; }
 `
 
 const Section = styled.div`
@@ -141,7 +151,6 @@ const SORT_LABELS: Record<SortField, string> = {
   part: 'Part', title: 'Title', arranger: 'Arranger', voicing: 'Voicing',
 }
 
-const PART_ORDER: Record<Part, number> = { Tenor: 0, Lead: 1, Baritone: 2, Bass: 3 }
 
 function orderedParts(preferred: Part | null): Part[] {
   const base: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
@@ -154,17 +163,21 @@ function songMeta(arranger: string | null, voicing: string | null): string {
 }
 
 export default function MySongsPage() {
+  const dispatch = useAppDispatch()
   const currentSingerId = useAppSelector(s => s.auth.singerId!)
   const { data: singer, isLoading, isError } = useGetSingerQuery(currentSingerId)
   const [addSong, { isLoading: isAdding }] = useAddSongMutation()
   const [removeSong] = useRemoveSongMutation()
   const [setPreferredPart] = useSetPreferredPartMutation()
+  const [setNickname] = useSetNicknameMutation()
 
   const [inputValue, setInputValue] = useState('')
   const [selectedSong, setSelectedSong] = useState<SongSummary | null>(null)
   const [part, setPart] = useState<Part>('Tenor')
   const [sortBy, setSortBy] = useState<SortField>('title')
+  const [nicknameInput, setNicknameInput] = useState('')
   const partInitialized = useRef(false)
+  const nicknameInitialized = useRef(false)
 
   useEffect(() => {
     if (!partInitialized.current && singer?.preferredPart) {
@@ -172,6 +185,23 @@ export default function MySongsPage() {
       setPart(singer.preferredPart)
     }
   }, [singer?.preferredPart])
+
+  useEffect(() => {
+    if (!nicknameInitialized.current && singer) {
+      nicknameInitialized.current = true
+      setNicknameInput(singer.nickname ?? '')
+    }
+  }, [singer])
+
+  async function handleNicknameBlur() {
+    const trimmed = nicknameInput.trim()
+    const current = singer?.nickname ?? ''
+    if (trimmed === current) return
+    const result = await setNickname({ singerId: currentSingerId, nickname: trimmed || null })
+    if ('data' in result) {
+      dispatch(setName(trimmed || singer!.name))
+    }
+  }
 
   async function handlePreferredPartChange(newPart: Part) {
     setPart(newPart)
@@ -192,7 +222,18 @@ export default function MySongsPage() {
   return (
     <div>
       <h2>{singer.name}&apos;s Songs</h2>
-      <PreferredRow>
+      <SettingsRow>
+        <label htmlFor="nickname">Nickname:</label>
+        <NicknameInput
+          id="nickname"
+          value={nicknameInput}
+          placeholder={singer.name}
+          onChange={e => setNicknameInput(e.target.value)}
+          onBlur={handleNicknameBlur}
+          onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
+        />
+      </SettingsRow>
+      <SettingsRow>
         <label htmlFor="preferred-part">Preferred part:</label>
         <Select
           id="preferred-part"
@@ -202,7 +243,7 @@ export default function MySongsPage() {
           <option value="" disabled>— select —</option>
           {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
         </Select>
-      </PreferredRow>
+      </SettingsRow>
       <SortBar>
         Sort by:
         {(['part', 'title', 'arranger', 'voicing'] as SortField[]).map(f => (

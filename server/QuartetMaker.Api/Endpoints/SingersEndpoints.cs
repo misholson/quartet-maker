@@ -15,7 +15,7 @@ public static class SingersEndpoints
         group.MapGet("/", async (AppDbContext db) =>
         {
             var singers = await db.Singers
-                .Select(s => new SingerSummaryDto(s.Id, s.Name, s.SingerSongs.Count))
+                .Select(s => new SingerSummaryDto(s.Id, s.Nickname ?? s.Name, s.SingerSongs.Count))
                 .ToListAsync();
             return Results.Ok(singers);
         })
@@ -32,7 +32,8 @@ public static class SingersEndpoints
 
             var dto = new SingerDto(
                 singer.Id,
-                singer.Name,
+                singer.Nickname ?? singer.Name,
+                singer.Nickname,
                 singer.PreferredPart,
                 singer.SingerSongs.Select(ss => new RepertoireEntryDto(ss.SongId, ss.Song.Title, ss.Part, ss.Song.Arranger, ss.Song.Voicing)));
 
@@ -72,6 +73,17 @@ public static class SingersEndpoints
             return Results.NoContent();
         })
         .WithName("SetPreferredPart");
+
+        group.MapPut("/nickname", async (SetNicknameRequest req, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var singerId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var singer = await db.Singers.FindAsync(singerId);
+            if (singer is null) return Results.NotFound();
+            singer.Nickname = string.IsNullOrWhiteSpace(req.Nickname) ? null : req.Nickname.Trim();
+            await db.SaveChangesAsync();
+            return Results.Ok(singer.Nickname);
+        })
+        .WithName("SetNickname");
 
         group.MapDelete("/{id:int}/songs/{songId:int}/{part}", async (int id, int songId, Part part, AppDbContext db) =>
         {

@@ -30,7 +30,7 @@ public static class QuartetEndpoints
 
             return Results.Created($"/api/quartets/{quartet.Id}", new QuartetDto(
                 quartet.Id, quartet.Name, quartet.InviteCode,
-                [new QuartetMemberDto(singerId, singer.Name, true)]));
+                [new QuartetMemberDto(singerId, singer.Nickname ?? singer.Name, true)]));
         })
         .WithTags("Quartet").WithName("CreateQuartet").RequireAuthorization();
 
@@ -73,7 +73,7 @@ public static class QuartetEndpoints
             var members = await db.QuartetMembers
                 .Where(qm => qm.QuartetId == quartet.Id)
                 .Join(db.Singers, qm => qm.SingerId, s => s.Id,
-                      (qm, s) => new QuartetMemberDto(qm.SingerId, s.Name, qm.IsOwner))
+                      (qm, s) => new QuartetMemberDto(qm.SingerId, s.Nickname ?? s.Name, qm.IsOwner))
                 .ToListAsync();
 
             return Results.Ok(new QuartetDto(quartet.Id, quartet.Name, quartet.InviteCode, members));
@@ -96,22 +96,35 @@ public static class QuartetEndpoints
                 .Include(ss => ss.Singer)
                 .ToListAsync();
 
+            var singers = entries.Select(ss => ss.Singer).DistinctBy(s => s.Id).ToList();
+            var rawNames = singers.ToDictionary(s => s.Id, s => s.Nickname ?? s.Name);
+            var nameCounts = rawNames.Values.GroupBy(n => n).ToDictionary(g => g.Key, g => g.Count());
+            var displayName = singers.ToDictionary(
+                s => s.Id,
+                s => nameCounts[rawNames[s.Id]] > 1
+                    ? AppendLastName(rawNames[s.Id], s.Name)
+                    : rawNames[s.Id]);
+
             var songs = entries
                 .GroupBy(ss => ss.Song.Title)
                 .Select(g =>
                 {
-                    var cov = new Dictionary<Part, List<string>>
+                    var cov = new Dictionary<Part, List<int>>
                     {
-                        [Part.Tenor]    = g.Where(ss => ss.Part == Part.Tenor).Select(ss => ss.Singer.Name).ToList(),
-                        [Part.Lead]     = g.Where(ss => ss.Part == Part.Lead).Select(ss => ss.Singer.Name).ToList(),
-                        [Part.Baritone] = g.Where(ss => ss.Part == Part.Baritone).Select(ss => ss.Singer.Name).ToList(),
-                        [Part.Bass]     = g.Where(ss => ss.Part == Part.Bass).Select(ss => ss.Singer.Name).ToList(),
+                        [Part.Tenor]    = g.Where(ss => ss.Part == Part.Tenor).Select(ss => ss.SingerId).ToList(),
+                        [Part.Lead]     = g.Where(ss => ss.Part == Part.Lead).Select(ss => ss.SingerId).ToList(),
+                        [Part.Baritone] = g.Where(ss => ss.Part == Part.Baritone).Select(ss => ss.SingerId).ToList(),
+                        [Part.Bass]     = g.Where(ss => ss.Part == Part.Bass).Select(ss => ss.SingerId).ToList(),
                     };
                     PropagateConstraints(cov);
                     var song = g.First().Song;
                     return new QuartetSongDto(
                         g.Key, song.Arranger, song.Voicing,
-                        new PartCoverageDto(cov[Part.Tenor], cov[Part.Lead], cov[Part.Baritone], cov[Part.Bass]),
+                        new PartCoverageDto(
+                            cov[Part.Tenor].Select(id => displayName[id]),
+                            cov[Part.Lead].Select(id => displayName[id]),
+                            cov[Part.Baritone].Select(id => displayName[id]),
+                            cov[Part.Bass].Select(id => displayName[id])),
                         cov.Values.All(s => s.Count > 0));
                 })
                 .OrderByDescending(s => s.IsComplete)
@@ -128,7 +141,13 @@ public static class QuartetEndpoints
     private static int GetSingerId(ClaimsPrincipal user) =>
         int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-    private static void PropagateConstraints(Dictionary<Part, List<string>> cov)
+    private static string AppendLastName(string display, string fullName)
+    {
+        var lastName = fullName.Trim().Split(' ')[^1];
+        return display.EndsWith(lastName) ? display : $"{display} {lastName}";
+    }
+
+    private static void PropagateConstraints(Dictionary<Part, List<int>> cov)
     {
         var parts = new[] { Part.Tenor, Part.Lead, Part.Baritone, Part.Bass };
         bool changed = true;
@@ -150,5 +169,5 @@ public static class QuartetEndpoints
 
     private static QuartetDto ToDto(Quartet quartet) =>
         new(quartet.Id, quartet.Name, quartet.InviteCode,
-            quartet.Members.Select(qm => new QuartetMemberDto(qm.SingerId, qm.Singer.Name, qm.IsOwner)));
+            quartet.Members.Select(qm => new QuartetMemberDto(qm.SingerId, qm.Singer.Nickname ?? qm.Singer.Name, qm.IsOwner)));
 }

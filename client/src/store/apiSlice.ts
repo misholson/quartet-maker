@@ -72,6 +72,15 @@ export const api = createApi({
       invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
     }),
 
+    setNickname: builder.mutation<string | null, { singerId: number; nickname: string | null }>({
+      query: ({ nickname }) => ({
+        url: '/api/singers/nickname',
+        method: 'PUT',
+        body: { nickname },
+      }),
+      invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
+    }),
+
     removeSong: builder.mutation<void, { singerId: number; songId: number; part: Part }>({
       query: ({ singerId, songId, part }) => ({
         url: `/api/singers/${singerId}/songs/${songId}/${part}`,
@@ -159,6 +168,7 @@ export const {
   useGetSingerQuery,
   useAddSongMutation,
   useSetPreferredPartMutation,
+  useSetNicknameMutation,
   useRemoveSongMutation,
   useCreateQuartetMutation,
   useGetMyQuartetsQuery,

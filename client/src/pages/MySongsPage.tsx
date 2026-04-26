@@ -46,7 +46,7 @@ const RemoveButton = styled.button`
 const Form = styled.form`
   display: flex;
   gap: 0.5rem;
-  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 `
 
 const Select = styled.select`
@@ -244,6 +244,21 @@ export default function MySongsPage() {
           {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
         </Select>
       </SettingsRow>
+      <Form onSubmit={handleSubmit}>
+        <SongCombobox
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onSelect={setSelectedSong}
+          placeholder="Search for a song…"
+          disabled={isAdding}
+        />
+        <Select value={part} onChange={e => setPart(e.target.value as Part)}>
+          {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
+        </Select>
+        <AddButton type="submit" disabled={isAdding || !selectedSong}>
+          {isAdding ? 'Adding…' : 'Add'}
+        </AddButton>
+      </Form>
       <SortBar>
         Sort by:
         {(['part', 'title', 'arranger', 'voicing'] as SortField[]).map(f => (
@@ -307,21 +322,6 @@ export default function MySongsPage() {
             </SongRow>
           ))
       )}
-      <Form onSubmit={handleSubmit}>
-        <SongCombobox
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onSelect={setSelectedSong}
-          placeholder="Search for a song…"
-          disabled={isAdding}
-        />
-        <Select value={part} onChange={e => setPart(e.target.value as Part)}>
-          {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
-        </Select>
-        <AddButton type="submit" disabled={isAdding || !selectedSong}>
-          {isAdding ? 'Adding…' : 'Add'}
-        </AddButton>
-      </Form>
     </div>
   )
 }

@@ -232,7 +232,13 @@ export default function QuartetFinderPage() {
   }
 
   const complete = songs.filter(s => s.isComplete)
-  const incomplete = songs.filter(s => !s.isComplete)
+  const incomplete = songs
+    .filter(s => !s.isComplete && Object.values(s.coverage).filter(v => v.length > 0).length >= 2)
+    .sort((a, b) => {
+      const missingA = Object.values(a.coverage).filter(v => v.length === 0).length
+      const missingB = Object.values(b.coverage).filter(v => v.length === 0).length
+      return missingA - missingB || a.title.localeCompare(b.title)
+    })
 
   return (
     <div>

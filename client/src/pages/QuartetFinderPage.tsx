@@ -297,7 +297,7 @@ export default function QuartetFinderPage() {
       <PageHeader>
         <h2 style={{ margin: 0 }}>Find a Quartet</h2>
         <SmallButton $variant={showCreate ? 'ghost' : undefined} onClick={toggleCreate}>
-          {showCreate ? 'Cancel' : '+ New Quartet'}
+          {showCreate ? 'Cancel' : '+ New'}
         </SmallButton>
       </PageHeader>
 

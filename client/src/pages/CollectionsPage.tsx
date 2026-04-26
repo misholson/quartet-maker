@@ -136,7 +136,7 @@ export default function CollectionsPage() {
       <PageHeader>
         <h2 style={{ margin: 0 }}>Collections</h2>
         <SmallButton $ghost={showCreate} onClick={() => setShowCreate(v => !v)}>
-          {showCreate ? 'Cancel' : '+ New Collection'}
+          {showCreate ? 'Cancel' : '+ New'}
         </SmallButton>
       </PageHeader>
 

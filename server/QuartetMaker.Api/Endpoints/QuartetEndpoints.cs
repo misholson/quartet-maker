@@ -100,15 +100,19 @@ public static class QuartetEndpoints
                 .GroupBy(ss => ss.Song.Title)
                 .Select(g =>
                 {
-                    var tenor    = g.Where(ss => ss.Part == Part.Tenor).Select(ss => ss.Singer.Name).ToList();
-                    var lead     = g.Where(ss => ss.Part == Part.Lead).Select(ss => ss.Singer.Name).ToList();
-                    var baritone = g.Where(ss => ss.Part == Part.Baritone).Select(ss => ss.Singer.Name).ToList();
-                    var bass     = g.Where(ss => ss.Part == Part.Bass).Select(ss => ss.Singer.Name).ToList();
-                    var song     = g.First().Song;
+                    var cov = new Dictionary<Part, List<string>>
+                    {
+                        [Part.Tenor]    = g.Where(ss => ss.Part == Part.Tenor).Select(ss => ss.Singer.Name).ToList(),
+                        [Part.Lead]     = g.Where(ss => ss.Part == Part.Lead).Select(ss => ss.Singer.Name).ToList(),
+                        [Part.Baritone] = g.Where(ss => ss.Part == Part.Baritone).Select(ss => ss.Singer.Name).ToList(),
+                        [Part.Bass]     = g.Where(ss => ss.Part == Part.Bass).Select(ss => ss.Singer.Name).ToList(),
+                    };
+                    PropagateConstraints(cov);
+                    var song = g.First().Song;
                     return new QuartetSongDto(
                         g.Key, song.Arranger, song.Voicing,
-                        new PartCoverageDto(tenor, lead, baritone, bass),
-                        tenor.Count > 0 && lead.Count > 0 && baritone.Count > 0 && bass.Count > 0);
+                        new PartCoverageDto(cov[Part.Tenor], cov[Part.Lead], cov[Part.Baritone], cov[Part.Bass]),
+                        cov.Values.All(s => s.Count > 0));
                 })
                 .OrderByDescending(s => s.IsComplete)
                 .ThenBy(s => s.Title)
@@ -123,6 +127,26 @@ public static class QuartetEndpoints
 
     private static int GetSingerId(ClaimsPrincipal user) =>
         int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    private static void PropagateConstraints(Dictionary<Part, List<string>> cov)
+    {
+        var parts = new[] { Part.Tenor, Part.Lead, Part.Baritone, Part.Bass };
+        bool changed = true;
+        while (changed)
+        {
+            changed = false;
+            foreach (var part in parts)
+            {
+                if (cov[part].Count != 1) continue;
+                var locked = cov[part][0];
+                foreach (var other in parts)
+                {
+                    if (other != part && cov[other].Remove(locked))
+                        changed = true;
+                }
+            }
+        }
+    }
 
     private static QuartetDto ToDto(Quartet quartet) =>
         new(quartet.Id, quartet.Name, quartet.InviteCode,

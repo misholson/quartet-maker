@@ -10,6 +10,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<SingerSong> SingerSongs => Set<SingerSong>();
     public DbSet<Quartet> Quartets => Set<Quartet>();
     public DbSet<QuartetMember> QuartetMembers => Set<QuartetMember>();
+    public DbSet<Collection> Collections => Set<Collection>();
+    public DbSet<CollectionSong> CollectionSongs => Set<CollectionSong>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,5 +65,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Quartet>()
             .HasIndex(q => q.InviteCode)
             .IsUnique();
+
+        modelBuilder.Entity<CollectionSong>()
+            .HasKey(cs => new { cs.CollectionId, cs.SongId });
+
+        modelBuilder.Entity<CollectionSong>()
+            .HasOne(cs => cs.Collection)
+            .WithMany(c => c.CollectionSongs)
+            .HasForeignKey(cs => cs.CollectionId);
+
+        modelBuilder.Entity<CollectionSong>()
+            .HasOne(cs => cs.Song)
+            .WithMany()
+            .HasForeignKey(cs => cs.SongId);
     }
 }

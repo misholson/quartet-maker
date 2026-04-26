@@ -26,6 +26,15 @@ public record QuartetMemberDto(int SingerId, string Name, bool IsOwner);
 public record QuartetDto(int Id, string Name, string InviteCode, IEnumerable<QuartetMemberDto> Members);
 public record QuartetSummaryDto(int Id, string Name, int MemberCount);
 
+public record CollectionSummaryDto(int Id, string Name, string? Description, string CreatedBy, int CreatedById, int SongCount);
+public record CollectionSongDto(int SongId, string Title, string? Arranger, Voicing? Voicing);
+public record CollectionDto(int Id, string Name, string? Description, string CreatedBy, int CreatedById, IEnumerable<CollectionSongDto> Songs);
+public record CreateCollectionRequest(string Name, string? Description);
+public record UpdateCollectionRequest(string Name, string? Description);
+public record AddSongToCollectionRequest(int SongId);
+public record ImportCollectionRequest(Part Part);
+public record ImportResultDto(int Added, int Skipped);
+
 public record GoogleLoginRequest(string IdToken);
 
 public record LoginResponse(string Token, int SingerId, string Name);

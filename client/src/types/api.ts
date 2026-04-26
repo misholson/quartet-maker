@@ -61,6 +61,36 @@ export interface QuartetSummary {
   memberCount: number
 }
 
+export interface CollectionSong {
+  songId: number
+  title: string
+  arranger: string | null
+  voicing: Voicing | null
+}
+
+export interface CollectionSummary {
+  id: number
+  name: string
+  description: string | null
+  createdBy: string
+  createdById: number
+  songCount: number
+}
+
+export interface CollectionDetail {
+  id: number
+  name: string
+  description: string | null
+  createdBy: string
+  createdById: number
+  songs: CollectionSong[]
+}
+
+export interface ImportResult {
+  added: number
+  skipped: number
+}
+
 export interface SongSummary {
   id: number
   title: string

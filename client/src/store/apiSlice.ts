@@ -8,6 +8,10 @@ import type {
   QuartetSong,
   QuartetDetail,
   QuartetSummary,
+  CollectionSummary,
+  CollectionDetail,
+  CollectionSong,
+  ImportResult,
   Part,
   LoginResponse,
 } from '../types/api'
@@ -24,7 +28,7 @@ export const api = createApi({
       return headers
     },
   }),
-  tagTypes: ['Singer', 'Quartet'],
+  tagTypes: ['Singer', 'Quartet', 'Collection'],
   endpoints: builder => ({
     googleLogin: builder.mutation<LoginResponse, { idToken: string }>({
       query: body => ({
@@ -103,6 +107,49 @@ export const api = createApi({
     getSongs: builder.query<SongSummary[], string>({
       query: search => `/api/songs?search=${encodeURIComponent(search)}`,
     }),
+
+    getCollections: builder.query<CollectionSummary[], string>({
+      query: search => `/api/collections${search ? `?search=${encodeURIComponent(search)}` : ''}`,
+      providesTags: result =>
+        result
+          ? [...result.map(({ id }) => ({ type: 'Collection' as const, id })), { type: 'Collection' as const, id: 'LIST' }]
+          : [{ type: 'Collection' as const, id: 'LIST' }],
+    }),
+
+    getCollection: builder.query<CollectionDetail, number>({
+      query: id => `/api/collections/${id}`,
+      providesTags: (_result, _error, id) => [{ type: 'Collection', id }],
+    }),
+
+    createCollection: builder.mutation<CollectionDetail, { name: string; description?: string }>({
+      query: body => ({ url: '/api/collections', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
+    }),
+
+    updateCollection: builder.mutation<void, { id: number; name: string; description?: string }>({
+      query: ({ id, ...body }) => ({ url: `/api/collections/${id}`, method: 'PUT', body }),
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'Collection', id }, { type: 'Collection', id: 'LIST' }],
+    }),
+
+    deleteCollection: builder.mutation<void, number>({
+      query: id => ({ url: `/api/collections/${id}`, method: 'DELETE' }),
+      invalidatesTags: (_result, _error, id) => [{ type: 'Collection', id }, { type: 'Collection', id: 'LIST' }],
+    }),
+
+    addSongToCollection: builder.mutation<CollectionSong, { collectionId: number; songId: number }>({
+      query: ({ collectionId, songId }) => ({ url: `/api/collections/${collectionId}/songs`, method: 'POST', body: { songId } }),
+      invalidatesTags: (_result, _error, { collectionId }) => [{ type: 'Collection', id: collectionId }],
+    }),
+
+    removeSongFromCollection: builder.mutation<void, { collectionId: number; songId: number }>({
+      query: ({ collectionId, songId }) => ({ url: `/api/collections/${collectionId}/songs/${songId}`, method: 'DELETE' }),
+      invalidatesTags: (_result, _error, { collectionId }) => [{ type: 'Collection', id: collectionId }],
+    }),
+
+    importCollection: builder.mutation<ImportResult, { collectionId: number; part: Part; singerId: number }>({
+      query: ({ collectionId, part }) => ({ url: `/api/collections/${collectionId}/import`, method: 'POST', body: { part } }),
+      invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
+    }),
   }),
 })
 
@@ -119,4 +166,12 @@ export const {
   useJoinQuartetMutation,
   useGetQuartetSongsQuery,
   useGetSongsQuery,
+  useGetCollectionsQuery,
+  useGetCollectionQuery,
+  useCreateCollectionMutation,
+  useUpdateCollectionMutation,
+  useDeleteCollectionMutation,
+  useAddSongToCollectionMutation,
+  useRemoveSongFromCollectionMutation,
+  useImportCollectionMutation,
 } = api

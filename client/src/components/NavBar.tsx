@@ -68,6 +68,7 @@ export default function NavBar() {
       <Title>Quartet Maker</Title>
       <StyledLink to="/my-songs">My Songs</StyledLink>
       <StyledLink to="/quartet">Find a Quartet</StyledLink>
+      <StyledLink to="/collections">Collections</StyledLink>
       {name && <UserName>{name}</UserName>}
       <LogoutButton onClick={handleLogout}>Sign out</LogoutButton>
     </Nav>

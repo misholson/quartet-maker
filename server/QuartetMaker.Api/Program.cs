@@ -64,5 +64,6 @@ app.MapAuthEndpoints(builder.Configuration);
 app.MapSingersEndpoints();
 app.MapSongsEndpoints();
 app.MapQuartetEndpoints();
+app.MapCollectionsEndpoints();
 
 app.Run();

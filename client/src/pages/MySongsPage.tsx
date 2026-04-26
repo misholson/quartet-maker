@@ -9,10 +9,10 @@ import SongCombobox from '../components/SongCombobox'
 const PARTS: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
 
 const PART_COLORS: Record<Part, string> = {
-  Tenor: '#dbeafe',
-  Lead: '#dcfce7',
-  Baritone: '#fef9c3',
-  Bass: '#ffe4e6',
+  Tenor: 'var(--part-tenor)',
+  Lead: 'var(--part-lead)',
+  Baritone: 'var(--part-baritone)',
+  Bass: 'var(--part-bass)',
 }
 
 const SongRow = styled.div`
@@ -20,7 +20,7 @@ const SongRow = styled.div`
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-subtle);
 `
 
 const PartBadge = styled.span<{ $part: Part }>`
@@ -36,11 +36,11 @@ const RemoveButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: #bbb;
+  color: var(--uncovered);
   font-size: 1rem;
   line-height: 1;
   padding: 0.2rem;
-  &:hover { color: #c00; }
+  &:hover { color: var(--danger-text); }
 `
 
 const Form = styled.form`
@@ -52,21 +52,23 @@ const Form = styled.form`
 
 const Select = styled.select`
   padding: 0.45rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
-  &:focus { outline: 2px solid #555; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
 `
 
 const AddButton = styled.button`
   padding: 0.45rem 1rem;
-  background: #222;
-  color: #fff;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   border: none;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  &:hover:not(:disabled) { background: #000; }
+  &:hover:not(:disabled) { opacity: 0.85; }
   &:disabled { opacity: 0.5; cursor: default; }
 `
 
@@ -76,16 +78,18 @@ const SettingsRow = styled.div`
   gap: 0.6rem;
   margin-bottom: 1rem;
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-muted);
 `
 
 const NicknameInput = styled.input`
   padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.9rem;
   width: 14rem;
-  &:focus { outline: 2px solid #555; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
 `
 
 const Section = styled.div`
@@ -97,7 +101,7 @@ const SectionHeading = styled.h3<{ $part: Part }>`
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #555;
+  color: var(--text-muted);
   margin: 0 0 0.25rem;
   padding: 0.25rem 0.6rem;
   background: ${({ $part }) => PART_COLORS[$part]};
@@ -112,31 +116,31 @@ const SortBar = styled.div`
   gap: 0.35rem;
   margin-bottom: 1rem;
   font-size: 0.85rem;
-  color: #888;
+  color: var(--text-faint);
 `
 
 const SortButton = styled.button<{ $active: boolean }>`
-  background: ${({ $active }) => ($active ? '#222' : 'none')};
-  color: ${({ $active }) => ($active ? '#fff' : '#555')};
-  border: 1px solid ${({ $active }) => ($active ? '#222' : '#ccc')};
+  background: ${({ $active }) => ($active ? 'var(--btn-primary-bg)' : 'none')};
+  color: ${({ $active }) => ($active ? 'var(--btn-primary-text)' : 'var(--text-muted)')};
+  border: 1px solid ${({ $active }) => ($active ? 'var(--btn-primary-bg)' : 'var(--border)')};
   border-radius: 4px;
   padding: 0.2rem 0.55rem;
   font-size: 0.8rem;
   cursor: pointer;
-  &:hover:not([data-active='true']) { border-color: #888; color: #111; }
+  &:hover:not([data-active='true']) { border-color: var(--text-faint); color: var(--text); }
 `
 
 const Empty = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
   font-style: italic;
 `
 
 const StatusMessage = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
 `
 
 const SongMeta = styled.span`
-  color: #888;
+  color: var(--text-faint);
   font-size: 0.8rem;
 `
 

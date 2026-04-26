@@ -15,12 +15,14 @@ const Wrapper = styled.div`
 const Input = styled.input`
   width: 100%;
   padding: 0.45rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
   box-sizing: border-box;
-  &:focus { outline: 2px solid #555; }
-  &:disabled { background: #f5f5f5; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
+  &:disabled { background: var(--bg-disabled); }
 `
 
 const Dropdown = styled.ul`
@@ -31,8 +33,8 @@ const Dropdown = styled.ul`
   margin: 2px 0 0;
   padding: 0;
   list-style: none;
-  background: #fff;
-  border: 1px solid #ccc;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 100;
@@ -43,15 +45,15 @@ const Dropdown = styled.ul`
 const DropdownItem = styled.li<{ $highlighted: boolean }>`
   padding: 0.45rem 0.7rem;
   cursor: pointer;
-  background: ${({ $highlighted }) => ($highlighted ? '#f0f0f0' : 'transparent')};
-  &:hover { background: #f0f0f0; }
+  background: ${({ $highlighted }) => ($highlighted ? 'var(--surface)' : 'transparent')};
+  &:hover { background: var(--surface); }
 `
 
 const ItemTitle = styled.div``
 
 const ItemMeta = styled.div`
   font-size: 0.8rem;
-  color: #888;
+  color: var(--text-faint);
 `
 
 function songMeta(arranger: string | null, voicing: string | null) {

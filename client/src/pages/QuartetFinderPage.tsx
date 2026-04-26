@@ -26,9 +26,9 @@ const PageHeader = styled.div`
 const SmallButton = styled.button<{ $variant?: 'ghost' }>`
   padding: 0.35rem 0.9rem;
   font-size: 0.9rem;
-  background: ${({ $variant }) => ($variant === 'ghost' ? '#fff' : '#222')};
-  color: ${({ $variant }) => ($variant === 'ghost' ? '#444' : '#fff')};
-  border: 1px solid ${({ $variant }) => ($variant === 'ghost' ? '#ccc' : '#222')};
+  background: ${({ $variant }) => ($variant === 'ghost' ? 'transparent' : 'var(--btn-primary-bg)')};
+  color: ${({ $variant }) => ($variant === 'ghost' ? 'var(--btn-ghost-text)' : 'var(--btn-primary-text)')};
+  border: 1px solid ${({ $variant }) => ($variant === 'ghost' ? 'var(--border)' : 'var(--btn-primary-bg)')};
   border-radius: 4px;
   cursor: pointer;
   &:hover { opacity: 0.85; }
@@ -44,24 +44,26 @@ const CreateForm = styled.form`
 
 const RerollButton = styled.button`
   background: none;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.35rem 0.6rem;
   font-size: 1rem;
   cursor: pointer;
-  color: #555;
+  color: var(--text-muted);
   line-height: 1;
-  &:hover { border-color: #888; color: #111; }
+  &:hover { border-color: var(--text-faint); color: var(--text); }
 `
 
 const NameInput = styled.input`
   flex: 1;
   padding: 0.4rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.95rem;
-  &:focus { outline: 2px solid #555; }
-  &:disabled { background: #f5f5f5; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
+  &:disabled { background: var(--bg-disabled); }
 `
 
 const QuartetList = styled.div`
@@ -78,20 +80,20 @@ const QuartetCard = styled.button<{ $selected: boolean }>`
   flex-wrap: wrap;
   width: 100%;
   padding: 0.6rem 1rem;
-  background: ${({ $selected }) => ($selected ? '#222' : '#f8f8f8')};
-  color: ${({ $selected }) => ($selected ? '#fff' : '#111')};
-  border: 2px solid ${({ $selected }) => ($selected ? '#222' : '#e5e5e5')};
+  background: ${({ $selected }) => ($selected ? 'var(--btn-primary-bg)' : 'var(--bg-subtle)')};
+  color: ${({ $selected }) => ($selected ? 'var(--btn-primary-text)' : 'var(--text)')};
+  border: 2px solid ${({ $selected }) => ($selected ? 'var(--btn-primary-bg)' : 'var(--border-subtle)')};
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
   font-size: 1rem;
   transition: background 0.1s, border-color 0.1s;
-  &:hover { border-color: #555; }
+  &:hover { border-color: var(--text-muted); }
 `
 
 const CardMeta = styled.span<{ $selected: boolean }>`
   font-size: 0.8rem;
-  color: ${({ $selected }) => ($selected ? '#aaa' : '#888')};
+  color: ${({ $selected }) => ($selected ? 'var(--text-faint)' : 'var(--text-faint)')};
   text-align: right;
   @media (max-width: 480px) {
     flex-basis: 100%;
@@ -102,7 +104,7 @@ const CardMeta = styled.span<{ $selected: boolean }>`
 
 const Divider = styled.hr`
   border: none;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--border-subtle);
   margin: 1.5rem 0;
 `
 
@@ -122,15 +124,15 @@ const MemberChip = styled.span`
   align-items: center;
   gap: 0.35rem;
   padding: 0.25rem 0.7rem;
-  background: #f0f0f0;
+  background: var(--surface);
   border-radius: 20px;
   font-size: 0.9rem;
 `
 
 const OwnerBadge = styled.span`
   font-size: 0.68rem;
-  background: #222;
-  color: #fff;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   padding: 0.1rem 0.4rem;
   border-radius: 8px;
 `
@@ -155,11 +157,11 @@ const InviteRow = styled.div`
 const InviteLinkInput = styled.input`
   flex: 1;
   padding: 0.4rem 0.7rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.82rem;
-  background: #f9f9f9;
-  color: #555;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
   cursor: default;
   min-width: 0;
 `
@@ -169,7 +171,7 @@ const SectionTitle = styled.h3`
 `
 
 const Hint = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
   font-style: italic;
 `
 
@@ -182,12 +184,12 @@ const ResultTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 0.95rem;
-  th, td { padding: 0.5rem 0.75rem; border: 1px solid #e5e5e5; text-align: left; }
-  th { background: #f5f5f5; font-weight: 600; }
+  th, td { padding: 0.5rem 0.75rem; border: 1px solid var(--border-subtle); text-align: left; }
+  th { background: var(--bg-subtle); font-weight: 600; }
 `
 
 const PartCell = styled.td<{ $covered: boolean }>`
-  color: ${({ $covered }) => ($covered ? '#166534' : '#d1d5db')};
+  color: ${({ $covered }) => ($covered ? 'var(--covered)' : 'var(--uncovered)')};
   font-weight: ${({ $covered }) => ($covered ? '500' : 'normal')};
 `
 
@@ -199,7 +201,7 @@ const CardList = styled.div`
 `
 
 const SongCard = styled.div`
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--border-subtle);
   border-radius: 6px;
   padding: 0.65rem 0.75rem;
 `
@@ -217,13 +219,13 @@ const SongCardParts = styled.div`
 
 const SongCardPart = styled.div<{ $covered: boolean }>`
   font-size: 0.85rem;
-  color: ${({ $covered }) => ($covered ? '#111' : '#bbb')};
+  color: ${({ $covered }) => ($covered ? 'var(--text)' : 'var(--uncovered)')};
 `
 
 const PartLabel = styled.span`
   font-size: 0.75rem;
   font-weight: 600;
-  color: #888;
+  color: var(--text-faint);
   margin-right: 0.2rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;

@@ -13,20 +13,22 @@ const PageHeader = styled.div`
 const SearchInput = styled.input`
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 1rem;
   margin-bottom: 1rem;
   box-sizing: border-box;
-  &:focus { outline: 2px solid #555; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
 `
 
 const SmallButton = styled.button<{ $ghost?: boolean }>`
   padding: 0.35rem 0.9rem;
   font-size: 0.9rem;
-  background: ${({ $ghost }) => ($ghost ? '#fff' : '#222')};
-  color: ${({ $ghost }) => ($ghost ? '#444' : '#fff')};
-  border: 1px solid ${({ $ghost }) => ($ghost ? '#ccc' : '#222')};
+  background: ${({ $ghost }) => ($ghost ? 'transparent' : 'var(--btn-primary-bg)')};
+  color: ${({ $ghost }) => ($ghost ? 'var(--btn-ghost-text)' : 'var(--btn-primary-text)')};
+  border: 1px solid ${({ $ghost }) => ($ghost ? 'var(--border)' : 'var(--btn-primary-bg)')};
   border-radius: 4px;
   cursor: pointer;
   &:hover { opacity: 0.85; }
@@ -44,22 +46,26 @@ const NameInput = styled.input`
   flex: 1;
   min-width: 160px;
   padding: 0.4rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.95rem;
-  &:focus { outline: 2px solid #555; }
-  &:disabled { background: #f5f5f5; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
+  &:disabled { background: var(--bg-disabled); }
 `
 
 const DescInput = styled.input`
   flex: 2;
   min-width: 200px;
   padding: 0.4rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.95rem;
-  &:focus { outline: 2px solid #555; }
-  &:disabled { background: #f5f5f5; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
+  &:disabled { background: var(--bg-disabled); }
 `
 
 const Grid = styled.div`
@@ -74,14 +80,15 @@ const Card = styled.button`
   align-items: flex-start;
   gap: 0.25rem;
   padding: 0.9rem 1rem;
-  background: #f8f8f8;
-  border: 2px solid #e5e5e5;
+  background: var(--bg-subtle);
+  border: 2px solid var(--border-subtle);
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
   width: 100%;
+  color: var(--text);
   transition: border-color 0.1s;
-  &:hover { border-color: #555; }
+  &:hover { border-color: var(--text-muted); }
 `
 
 const CardName = styled.span`
@@ -91,17 +98,17 @@ const CardName = styled.span`
 
 const CardDesc = styled.span`
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-link);
 `
 
 const CardMeta = styled.span`
   font-size: 0.8rem;
-  color: #999;
+  color: var(--text-placeholder);
   margin-top: 0.15rem;
 `
 
 const Hint = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
   font-style: italic;
 `
 

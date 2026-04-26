@@ -21,12 +21,12 @@ const Title = styled.h1`
 `
 
 const Subtitle = styled.p`
-  color: #666;
+  color: var(--text-link);
   margin: 0;
 `
 
 const ErrorMsg = styled.p`
-  color: #c00;
+  color: var(--danger-text);
   font-size: 0.9rem;
   margin: 0;
 `

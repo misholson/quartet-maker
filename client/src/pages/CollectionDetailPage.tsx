@@ -22,10 +22,10 @@ const BackLink = styled(Link)`
   align-items: center;
   gap: 0.3rem;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-link);
   text-decoration: none;
   margin-bottom: 1.25rem;
-  &:hover { color: #111; }
+  &:hover { color: var(--text); }
 `
 
 const Header = styled.div`
@@ -45,13 +45,13 @@ const CollectionTitle = styled.h2`
 `
 
 const Description = styled.p`
-  color: #555;
+  color: var(--text-muted);
   margin: 0.3rem 0 0;
   font-size: 0.95rem;
 `
 
 const Creator = styled.p`
-  color: #888;
+  color: var(--text-faint);
   font-size: 0.85rem;
   margin: 0.25rem 0 0;
 `
@@ -59,9 +59,9 @@ const Creator = styled.p`
 const SmallButton = styled.button<{ $ghost?: boolean; $danger?: boolean }>`
   padding: 0.3rem 0.75rem;
   font-size: 0.85rem;
-  background: ${({ $ghost, $danger }) => $danger ? '#fee2e2' : $ghost ? '#fff' : '#222'};
-  color: ${({ $ghost, $danger }) => $danger ? '#c00' : $ghost ? '#444' : '#fff'};
-  border: 1px solid ${({ $ghost, $danger }) => $danger ? '#fca5a5' : $ghost ? '#ccc' : '#222'};
+  background: ${({ $ghost, $danger }) => $danger ? 'var(--danger-bg)' : $ghost ? 'transparent' : 'var(--btn-primary-bg)'};
+  color: ${({ $ghost, $danger }) => $danger ? 'var(--danger-text)' : $ghost ? 'var(--btn-ghost-text)' : 'var(--btn-primary-text)'};
+  border: 1px solid ${({ $ghost, $danger }) => $danger ? 'var(--danger-border)' : $ghost ? 'var(--border)' : 'var(--btn-primary-bg)'};
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
@@ -78,10 +78,12 @@ const EditForm = styled.form`
 
 const TextInput = styled.input`
   padding: 0.4rem 0.7rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.95rem;
-  &:focus { outline: 2px solid #555; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
 `
 
 const EditRow = styled.div`
@@ -91,7 +93,7 @@ const EditRow = styled.div`
 
 const Divider = styled.hr`
   border: none;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--border-subtle);
   margin: 1.25rem 0;
 `
 
@@ -105,20 +107,22 @@ const ImportRow = styled.div`
 
 const ImportLabel = styled.span`
   font-size: 0.9rem;
-  color: #555;
+  color: var(--text-muted);
 `
 
 const PartSelect = styled.select`
   padding: 0.35rem 0.6rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-size: 0.9rem;
-  &:focus { outline: 2px solid #555; }
+  background: var(--bg-input);
+  color: var(--text);
+  &:focus { outline: 2px solid var(--text-muted); }
 `
 
 const ImportResult = styled.span`
   font-size: 0.85rem;
-  color: #166534;
+  color: var(--success);
 `
 
 const SongList = styled.div``
@@ -128,7 +132,7 @@ const SongRow = styled.div`
   align-items: center;
   gap: 0.6rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-subtle);
 `
 
 const SongInfo = styled.div`
@@ -142,7 +146,7 @@ const SongTitle = styled.span`
 
 const SongMeta = styled.span`
   font-size: 0.8rem;
-  color: #888;
+  color: var(--text-faint);
 `
 
 const RowActions = styled.div`
@@ -156,11 +160,11 @@ const RemoveButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: #bbb;
+  color: var(--uncovered);
   font-size: 1rem;
   line-height: 1;
   padding: 0.2rem;
-  &:hover { color: #c00; }
+  &:hover { color: var(--danger-text); }
 `
 
 const AddToRepertoireRow = styled.div`
@@ -177,12 +181,12 @@ const AddSongSection = styled.div`
 `
 
 const Hint = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
   font-style: italic;
 `
 
 const StatusMessage = styled.p`
-  color: #999;
+  color: var(--text-placeholder);
 `
 
 function meta(arranger: string | null, voicing: string | null) {

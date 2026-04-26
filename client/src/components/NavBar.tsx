@@ -10,7 +10,7 @@ const Nav = styled.nav`
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
   padding: 0.75rem 0;
-  border-bottom: 2px solid #222;
+  border-bottom: 2px solid var(--border-strong);
   margin-bottom: 1.5rem;
 `
 
@@ -29,7 +29,7 @@ const HamburgerButton = styled.button`
   font-size: 1.5rem;
   line-height: 1;
   padding: 0.2rem 0.3rem;
-  color: #222;
+  color: var(--text);
   @media (max-width: 600px) { display: block; }
 `
 
@@ -44,26 +44,26 @@ const NavLinks = styled.div<{ $open: boolean }>`
     align-items: flex-start;
     flex-basis: 100%;
     padding: 0.5rem 0 0.25rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--border-subtle);
     gap: 0.15rem;
   }
 `
 
 const StyledLink = styled(NavLink)`
   text-decoration: none;
-  color: #666;
+  color: var(--text-link);
   padding: 0.4rem 0.6rem;
   border-radius: 4px;
   font-size: 0.9rem;
   white-space: nowrap;
 
   &.active {
-    color: #111;
+    color: var(--active-text);
     font-weight: 600;
-    background: #eee;
+    background: var(--active-bg);
   }
 
-  &:hover:not(.active) { color: #111; }
+  &:hover:not(.active) { color: var(--text); }
 
   @media (max-width: 600px) {
     width: 100%;
@@ -74,7 +74,7 @@ const StyledLink = styled(NavLink)`
 
 const UserName = styled.span`
   font-size: 0.85rem;
-  color: #444;
+  color: var(--text-muted);
   margin-left: auto;
   @media (max-width: 600px) {
     margin-left: 0;
@@ -85,14 +85,14 @@ const UserName = styled.span`
 
 const LogoutButton = styled.button`
   background: none;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.35rem 0.6rem;
   font-size: 0.85rem;
   cursor: pointer;
-  color: #555;
+  color: var(--text-muted);
   white-space: nowrap;
-  &:hover { background: #f5f5f5; }
+  &:hover { background: var(--bg-subtle); }
   @media (max-width: 600px) {
     font-size: 0.95rem;
     padding: 0.5rem 0.6rem;

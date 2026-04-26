@@ -7,50 +7,28 @@ public static class Seeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
-        if (await db.Singers.AnyAsync()) return;
+        if (!await db.Singers.AnyAsync())
+            await SeedSingersAsync(db);
 
+        if (!await db.Collections.AnyAsync())
+            await SeedCollectionsAsync(db);
+    }
+
+    private static async Task SeedSingersAsync(AppDbContext db)
+    {
         var singers = new Singer[]
         {
-            new() { Id = 1, Name = "Mike" },
-            new() { Id = 2, Name = "Alice" },
-            new() { Id = 3, Name = "Bob" },
-            new() { Id = 4, Name = "Carol" },
-            new() { Id = 5, Name = "Dave" },
+            new() { Id = 1, Name = "Seed" }
         };
 
         var songs = new Song[]
         {
-            new() { Id = 1, Title = "Sweet Adeline",    Arranger = "Harry Armstrong",       Voicing = Voicing.TTBB },
-            new() { Id = 2, Title = "Hello My Baby",    Arranger = "Howard Emerson Brooks", Voicing = Voicing.TTBB },
-            new() { Id = 3, Title = "Down Our Way",     Arranger = null,                    Voicing = Voicing.TTBB },
-            new() { Id = 4, Title = "Coney Island Baby",Arranger = "Jim Clancy",            Voicing = Voicing.TTBB },
-            new() { Id = 5, Title = "Lida Rose",        Arranger = "Meredith Willson",      Voicing = Voicing.SSAA },
+            new() { Id = 1, Title = "Hello My Baby",     Arranger = "Howard Emerson Brooks", Voicing = Voicing.TTBB }
         };
 
         var singerSongs = new SingerSong[]
         {
-            // Mike — Tenor
-            new() { SingerId = 1, SongId = 1, Part = Part.Tenor },
-            new() { SingerId = 1, SongId = 2, Part = Part.Tenor },
-            new() { SingerId = 1, SongId = 3, Part = Part.Tenor },
-            new() { SingerId = 1, SongId = 4, Part = Part.Tenor },
-            // Alice — Lead
-            new() { SingerId = 2, SongId = 1, Part = Part.Lead },
-            new() { SingerId = 2, SongId = 2, Part = Part.Lead },
-            new() { SingerId = 2, SongId = 4, Part = Part.Lead },
-            // Bob — Baritone
-            new() { SingerId = 3, SongId = 1, Part = Part.Baritone },
-            new() { SingerId = 3, SongId = 2, Part = Part.Baritone },
-            new() { SingerId = 3, SongId = 3, Part = Part.Baritone },
-            new() { SingerId = 3, SongId = 4, Part = Part.Baritone },
-            // Carol — Bass
-            new() { SingerId = 4, SongId = 1, Part = Part.Bass },
-            new() { SingerId = 4, SongId = 2, Part = Part.Bass },
-            new() { SingerId = 4, SongId = 3, Part = Part.Bass },
-            new() { SingerId = 4, SongId = 4, Part = Part.Bass },
-            // Dave — Lead
-            new() { SingerId = 5, SongId = 3, Part = Part.Lead },
-            new() { SingerId = 5, SongId = 5, Part = Part.Lead },
+            new() { SingerId = 1, SongId = 1, Part = Part.Tenor }
         };
 
         db.Singers.AddRange(singers);
@@ -58,4 +36,104 @@ public static class Seeder
         db.SingerSongs.AddRange(singerSongs);
         await db.SaveChangesAsync();
     }
+
+    private static async Task SeedCollectionsAsync(AppDbContext db)
+    {
+        var csvDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Data", "Seeds", "Collections");
+        if (!Directory.Exists(csvDir)) return;
+
+        foreach (var csvPath in Directory.EnumerateFiles(csvDir, "*.csv"))
+        {
+            var collectionName = Path.GetFileNameWithoutExtension(csvPath);
+            var lines = await File.ReadAllLinesAsync(csvPath);
+
+            var collection = new Collection
+            {
+                Name = collectionName,
+                CreatedById = 1,
+            };
+            db.Collections.Add(collection);
+            await db.SaveChangesAsync();
+
+            foreach (var line in lines.Skip(1)) // skip header
+            {
+                var (title, arranger, voicing) = ParseCsvRow(line);
+                if (string.IsNullOrWhiteSpace(title)) continue;
+
+                var song = await db.Songs.FirstOrDefaultAsync(s => s.Title == title);
+                if (song is null)
+                {
+                    song = new Song { Title = title, Arranger = arranger, Voicing = voicing };
+                    db.Songs.Add(song);
+                    await db.SaveChangesAsync();
+                }
+
+                db.CollectionSongs.Add(new CollectionSong { CollectionId = collection.Id, SongId = song.Id });
+            }
+
+            await db.SaveChangesAsync();
+        }
+    }
+
+    private static (string title, string? arranger, Voicing? voicing) ParseCsvRow(string line)
+    {
+        var fields = SplitCsvLine(line);
+        if (fields.Count < 1) return (string.Empty, null, null);
+
+        var title = fields[0];
+        var arranger = fields.Count > 1 ? NullIfEmpty(fields[1]) : null;
+        Voicing? voicing = null;
+        if (fields.Count > 2 && Enum.TryParse<Voicing>(fields[2], out var v))
+            voicing = v;
+
+        return (title, arranger, voicing);
+    }
+
+    private static List<string> SplitCsvLine(string line)
+    {
+        var fields = new List<string>();
+        var i = 0;
+        while (i < line.Length)
+        {
+            if (line[i] == '"')
+            {
+                i++; // skip opening quote
+                var sb = new System.Text.StringBuilder();
+                while (i < line.Length)
+                {
+                    if (line[i] == '"' && i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        sb.Append('"');
+                        i += 2;
+                    }
+                    else if (line[i] == '"')
+                    {
+                        i++; // skip closing quote
+                        break;
+                    }
+                    else
+                    {
+                        sb.Append(line[i++]);
+                    }
+                }
+                fields.Add(sb.ToString());
+                if (i < line.Length && line[i] == ',') i++;
+            }
+            else
+            {
+                var end = line.IndexOf(',', i);
+                if (end == -1)
+                {
+                    fields.Add(line[i..]);
+                    break;
+                }
+                fields.Add(line[i..end]);
+                i = end + 1;
+            }
+        }
+        return fields;
+    }
+
+    private static string? NullIfEmpty(string s) =>
+        string.IsNullOrWhiteSpace(s) ? null : s;
 }

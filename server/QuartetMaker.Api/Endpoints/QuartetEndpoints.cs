@@ -69,9 +69,20 @@ public static class QuartetEndpoints
             var quartet = await db.Quartets.FirstOrDefaultAsync(q => q.InviteCode == inviteCode);
             if (quartet is null) return Results.NotFound("Invalid invite code.");
 
-            // INSERT OR IGNORE is atomic — safe against concurrent duplicate requests
-            await db.Database.ExecuteSqlAsync(
-                $"INSERT OR IGNORE INTO QuartetMembers (QuartetId, SingerId, IsOwner, JoinedAt) VALUES ({quartet.Id}, {singerId}, 0, datetime('now'))");
+            var alreadyMember = await db.QuartetMembers
+                .AnyAsync(qm => qm.QuartetId == quartet.Id && qm.SingerId == singerId);
+            if (!alreadyMember)
+            {
+                db.QuartetMembers.Add(new QuartetMember
+                {
+                    QuartetId = quartet.Id,
+                    SingerId = singerId,
+                    IsOwner = false,
+                    JoinedAt = DateTime.UtcNow,
+                });
+                try { await db.SaveChangesAsync(); }
+                catch (Microsoft.EntityFrameworkCore.DbUpdateException) { /* concurrent join race — already a member */ }
+            }
 
             var members = await db.QuartetMembers
                 .Where(qm => qm.QuartetId == quartet.Id)

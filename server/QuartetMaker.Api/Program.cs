@@ -9,19 +9,27 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=quartet.db";
+var isSqlite = connectionString.TrimStart().StartsWith("Data Source=", StringComparison.OrdinalIgnoreCase);
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=quartet.db"));
+{
+    if (isSqlite) opt.UseSqlite(connectionString);
+    else opt.UseSqlServer(connectionString);
+});
 
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:5173"];
 builder.Services.AddCors(opt =>
     opt.AddDefaultPolicy(p =>
-        p.WithOrigins("http://localhost:5173")
+        p.WithOrigins(allowedOrigins)
          .AllowAnyHeader()
          .AllowAnyMethod()));
 
 builder.Services.ConfigureHttpJsonOptions(opt =>
     opt.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
-var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? throw new InvalidOperationException("Jwt:Secret configuration is required");
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opt =>

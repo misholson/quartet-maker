@@ -16,7 +16,7 @@ import type {
   LoginResponse,
 } from '../types/api'
 
-const API_BASE = 'http://localhost:5143'
+const API_BASE = import.meta.env.VITE_API_URL ?? ''
 
 export const api = createApi({
   reducerPath: 'api',

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using QuartetMaker.Api.Data;
 using QuartetMaker.Api.DTOs;
@@ -32,6 +33,7 @@ public static class SingersEndpoints
             var dto = new SingerDto(
                 singer.Id,
                 singer.Name,
+                singer.PreferredPart,
                 singer.SingerSongs.Select(ss => new RepertoireEntryDto(ss.SongId, ss.Song.Title, ss.Part, ss.Song.Arranger, ss.Song.Voicing)));
 
             return Results.Ok(dto);
@@ -59,6 +61,17 @@ public static class SingersEndpoints
                 new RepertoireEntryDto(song.Id, song.Title, req.Part, song.Arranger, song.Voicing));
         })
         .WithName("AddSong");
+
+        group.MapPut("/preferred-part", async (SetPreferredPartRequest req, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var singerId = int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var singer = await db.Singers.FindAsync(singerId);
+            if (singer is null) return Results.NotFound();
+            singer.PreferredPart = req.Part;
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        })
+        .WithName("SetPreferredPart");
 
         group.MapDelete("/{id:int}/songs/{songId:int}/{part}", async (int id, int songId, Part part, AppDbContext db) =>
         {

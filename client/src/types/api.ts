@@ -18,6 +18,7 @@ export interface RepertoireEntry {
 export interface Singer {
   id: number
   name: string
+  preferredPart: Part | null
   repertoire: RepertoireEntry[]
 }
 

@@ -31,6 +31,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .IsUnique()
             .HasFilter("[GoogleId] IS NOT NULL");
 
+        modelBuilder.Entity<Singer>()
+            .Property(s => s.PreferredPart)
+            .HasConversion<string>();
+
         modelBuilder.Entity<Song>()
             .HasIndex(s => s.Title)
             .IsUnique();

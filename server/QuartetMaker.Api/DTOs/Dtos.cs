@@ -6,7 +6,8 @@ public record SingerSummaryDto(int Id, string Name, int SongCount);
 
 public record RepertoireEntryDto(int SongId, string SongTitle, Part Part, string? Arranger, Voicing? Voicing);
 
-public record SingerDto(int Id, string Name, IEnumerable<RepertoireEntryDto> Repertoire);
+public record SingerDto(int Id, string Name, Part? PreferredPart, IEnumerable<RepertoireEntryDto> Repertoire);
+public record SetPreferredPartRequest(Part? Part);
 
 public record AddSongRequest(string SongTitle, Part Part, string? Arranger, Voicing? Voicing);
 

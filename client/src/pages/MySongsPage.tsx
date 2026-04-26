@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { useAppSelector } from '../store'
-import { useGetSingerQuery, useAddSongMutation, useRemoveSongMutation, useGetSongsQuery } from '../store/apiSlice'
+import { useGetSingerQuery, useAddSongMutation, useRemoveSongMutation, useGetSongsQuery, useSetPreferredPartMutation } from '../store/apiSlice'
 import type { Part, SongSummary } from '../types/api'
 
 const PARTS: Part[] = ['Tenor', 'Lead', 'Baritone', 'Bass']
@@ -76,6 +76,15 @@ const AddButton = styled.button`
   cursor: pointer;
   &:hover:not(:disabled) { background: #000; }
   &:disabled { opacity: 0.5; cursor: default; }
+`
+
+const PreferredRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  color: #555;
 `
 
 const Empty = styled.p`
@@ -223,10 +232,24 @@ export default function MySongsPage() {
   const { data: singer, isLoading, isError } = useGetSingerQuery(currentSingerId)
   const [addSong, { isLoading: isAdding }] = useAddSongMutation()
   const [removeSong] = useRemoveSongMutation()
+  const [setPreferredPart] = useSetPreferredPartMutation()
 
   const [inputValue, setInputValue] = useState('')
   const [selectedSong, setSelectedSong] = useState<SongSummary | null>(null)
   const [part, setPart] = useState<Part>('Tenor')
+  const partInitialized = useRef(false)
+
+  useEffect(() => {
+    if (!partInitialized.current && singer?.preferredPart) {
+      partInitialized.current = true
+      setPart(singer.preferredPart)
+    }
+  }, [singer?.preferredPart])
+
+  async function handlePreferredPartChange(newPart: Part) {
+    setPart(newPart)
+    await setPreferredPart({ singerId: currentSingerId, part: newPart })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -242,6 +265,17 @@ export default function MySongsPage() {
   return (
     <div>
       <h2>{singer.name}&apos;s Songs</h2>
+      <PreferredRow>
+        <label htmlFor="preferred-part">Preferred part:</label>
+        <Select
+          id="preferred-part"
+          value={singer.preferredPart ?? ''}
+          onChange={e => handlePreferredPartChange(e.target.value as Part)}
+        >
+          <option value="" disabled>— select —</option>
+          {PARTS.map(p => <option key={p} value={p}>{p}</option>)}
+        </Select>
+      </PreferredRow>
       {singer.repertoire.length === 0 ? (
         <Empty>No songs yet — add one below.</Empty>
       ) : (

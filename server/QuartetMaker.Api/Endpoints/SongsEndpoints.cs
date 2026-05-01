@@ -52,7 +52,7 @@ public static class SongsEndpoints
         })
         .WithTags("Songs")
         .WithName("CreateSong")
-        .RequireAuthorization();
+        .RequireAuthorization(p => p.RequireRole("Admin"));
 
         app.MapPost("/api/songs/import", async (ImportSongsRequest req, AppDbContext db) =>
         {
@@ -82,7 +82,7 @@ public static class SongsEndpoints
         })
         .WithTags("Songs")
         .WithName("ImportSongs")
-        .RequireAuthorization();
+        .RequireAuthorization(p => p.RequireRole("Admin"));
 
         return app;
     }

@@ -15,6 +15,7 @@ import type {
   CollectionSong,
   ImportResult,
   Part,
+  Role,
   LoginResponse,
 } from '../types/api'
 
@@ -127,6 +128,11 @@ export const api = createApi({
       query: body => ({ url: '/api/songs/import', method: 'POST', body }),
     }),
 
+    setRole: builder.mutation<void, { singerId: number; role: Role }>({
+      query: ({ singerId, role }) => ({ url: `/api/singers/${singerId}/role`, method: 'PUT', body: { role } }),
+      invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
+    }),
+
     getCollections: builder.query<CollectionSummary[], string>({
       query: search => `/api/collections${search ? `?search=${encodeURIComponent(search)}` : ''}`,
       providesTags: result =>
@@ -188,6 +194,7 @@ export const {
   useGetSongsQuery,
   useCreateSongMutation,
   useImportSongsMutation,
+  useSetRoleMutation,
   useGetCollectionsQuery,
   useGetCollectionQuery,
   useCreateCollectionMutation,

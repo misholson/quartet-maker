@@ -1,5 +1,6 @@
 export type Part = 'Tenor' | 'Lead' | 'Baritone' | 'Bass'
 export type Voicing = 'TTBB' | 'SATB' | 'SSAA' | 'Other'
+export type Role = 'User' | 'Admin'
 
 export interface SingerSummary {
   id: number
@@ -41,6 +42,7 @@ export interface LoginResponse {
   token: string
   singerId: number
   name: string
+  role: Role
 }
 
 export interface QuartetMemberInfo {

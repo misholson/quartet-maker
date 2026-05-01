@@ -37,6 +37,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .Property(s => s.PreferredPart)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Singer>()
+            .Property(s => s.Role)
+            .HasConversion<string>();
+
         modelBuilder.Entity<Song>()
             .HasIndex(s => new { s.Title, s.Arranger, s.Voicing })
             .IsUnique();

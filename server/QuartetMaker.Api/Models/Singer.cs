@@ -8,5 +8,6 @@ public class Singer
     public string? Email { get; set; }
     public string? Nickname { get; set; }
     public Part? PreferredPart { get; set; }
+    public Role Role { get; set; } = Role.User;
     public ICollection<SingerSong> SingerSongs { get; set; } = [];
 }

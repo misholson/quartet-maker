@@ -40,4 +40,6 @@ public record ImportResultDto(int Added, int Skipped);
 
 public record GoogleLoginRequest(string IdToken);
 
-public record LoginResponse(string Token, int SingerId, string Name);
+public record LoginResponse(string Token, int SingerId, string Name, string Role);
+
+public record SetRoleRequest(Role Role);

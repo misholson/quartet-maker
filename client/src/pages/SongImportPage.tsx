@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useAppSelector } from '../store'
 import { useCreateSongMutation, useImportSongsMutation } from '../store/apiSlice'
 import type { CreateSongRequest, Voicing } from '../types/api'
 
@@ -259,6 +261,9 @@ function parseCsv(raw: string): ParsedRow[] {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function SongImportPage() {
+  const isAdmin = useAppSelector(s => s.auth.role === 'Admin')
+  if (!isAdmin) return <Navigate to="/" replace />
+
   // Single song state
   const [singleTitle, setSingleTitle] = useState('')
   const [singleArranger, setSingleArranger] = useState('')

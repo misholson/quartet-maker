@@ -103,6 +103,7 @@ export default function NavBar() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const name = useAppSelector(s => s.auth.name)
+  const isAdmin = useAppSelector(s => s.auth.role === 'Admin')
   const [menuOpen, setMenuOpen] = useState(false)
 
   function handleLogout() {
@@ -128,7 +129,7 @@ export default function NavBar() {
         <StyledLink to="/my-songs" onClick={closeMenu}>My Songs</StyledLink>
         <StyledLink to="/quartet" onClick={closeMenu}>Find a Quartet</StyledLink>
         <StyledLink to="/collections" onClick={closeMenu}>Collections</StyledLink>
-        <StyledLink to="/songs/import" onClick={closeMenu}>Import Songs</StyledLink>
+        {isAdmin && <StyledLink to="/songs/import" onClick={closeMenu}>Import Songs</StyledLink>}
         {name && <UserName>{name}</UserName>}
         <LogoutButton onClick={() => { handleLogout(); closeMenu() }}>Sign out</LogoutButton>
       </NavLinks>

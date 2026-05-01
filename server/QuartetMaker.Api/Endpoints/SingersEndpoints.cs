@@ -45,7 +45,8 @@ public static class SingersEndpoints
         {
             if (await db.Singers.FindAsync(id) is null) return Results.NotFound();
 
-            var song = await db.Songs.FirstOrDefaultAsync(s => s.Title == req.SongTitle)
+            var song = await db.Songs.FirstOrDefaultAsync(s =>
+                           s.Title == req.SongTitle && s.Arranger == req.Arranger && s.Voicing == req.Voicing)
                        ?? db.Songs.Add(new Song { Title = req.SongTitle, Arranger = req.Arranger, Voicing = req.Voicing }).Entity;
 
             await db.SaveChangesAsync();

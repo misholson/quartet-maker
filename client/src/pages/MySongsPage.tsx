@@ -217,7 +217,7 @@ export default function MySongsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!selectedSong) return
-    await addSong({ singerId: currentSingerId, body: { songTitle: selectedSong.title, part } })
+    await addSong({ singerId: currentSingerId, body: { songTitle: selectedSong.title, part, arranger: selectedSong.arranger ?? undefined, voicing: selectedSong.voicing ?? undefined } })
     setInputValue('')
     setSelectedSong(null)
   }

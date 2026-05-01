@@ -95,6 +95,26 @@ export interface ImportResult {
   skipped: number
 }
 
+export interface CollectionCsvRow {
+  title: string
+  collection: string
+}
+
+export interface ImportCollectionCsvRequest {
+  rows: CollectionCsvRow[]
+}
+
+export interface CsvSkippedRow {
+  title: string
+  collection: string
+  reason: string
+}
+
+export interface ImportCollectionCsvResult {
+  added: number
+  skipped: CsvSkippedRow[]
+}
+
 export interface SongSummary {
   id: number
   title: string

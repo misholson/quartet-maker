@@ -14,6 +14,8 @@ import type {
   CollectionDetail,
   CollectionSong,
   ImportResult,
+  ImportCollectionCsvRequest,
+  ImportCollectionCsvResult,
   Part,
   Role,
   LoginResponse,
@@ -128,6 +130,11 @@ export const api = createApi({
       query: body => ({ url: '/api/songs/import', method: 'POST', body }),
     }),
 
+    importCollectionCsv: builder.mutation<ImportCollectionCsvResult, ImportCollectionCsvRequest>({
+      query: body => ({ url: '/api/collections/import-csv', method: 'POST', body }),
+      invalidatesTags: [{ type: 'Collection', id: 'LIST' }],
+    }),
+
     setRole: builder.mutation<void, { singerId: number; role: Role }>({
       query: ({ singerId, role }) => ({ url: `/api/singers/${singerId}/role`, method: 'PUT', body: { role } }),
       invalidatesTags: (_result, _error, { singerId }) => [{ type: 'Singer', id: singerId }],
@@ -194,6 +201,7 @@ export const {
   useGetSongsQuery,
   useCreateSongMutation,
   useImportSongsMutation,
+  useImportCollectionCsvMutation,
   useSetRoleMutation,
   useGetCollectionsQuery,
   useGetCollectionQuery,

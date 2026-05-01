@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
+import { useAppSelector } from '../store'
 import { useGetCollectionsQuery, useCreateCollectionMutation } from '../store/apiSlice'
 
 const PageHeader = styled.div`
@@ -114,6 +115,7 @@ const Hint = styled.p`
 
 export default function CollectionsPage() {
   const navigate = useNavigate()
+  const isAdmin = useAppSelector(s => s.auth.role === 'Admin')
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
@@ -142,9 +144,16 @@ export default function CollectionsPage() {
     <div>
       <PageHeader>
         <h2 style={{ margin: 0 }}>Collections</h2>
-        <SmallButton $ghost={showCreate} onClick={() => setShowCreate(v => !v)}>
-          {showCreate ? 'Cancel' : '+ New'}
-        </SmallButton>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {isAdmin && (
+            <SmallButton $ghost onClick={() => navigate('/collections/import')}>
+              Import CSV
+            </SmallButton>
+          )}
+          <SmallButton $ghost={showCreate} onClick={() => setShowCreate(v => !v)}>
+            {showCreate ? 'Cancel' : '+ New'}
+          </SmallButton>
+        </div>
       </PageHeader>
 
       {showCreate && (

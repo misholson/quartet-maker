@@ -38,6 +38,11 @@ public record AddSongToCollectionRequest(int SongId);
 public record ImportCollectionRequest(Part Part);
 public record ImportResultDto(int Added, int Skipped);
 
+public record CollectionCsvRow(string Title, string Collection);
+public record ImportCollectionCsvRequest(IEnumerable<CollectionCsvRow> Rows);
+public record CsvSkippedRow(string Title, string Collection, string Reason);
+public record ImportCollectionCsvResult(int Added, IEnumerable<CsvSkippedRow> Skipped);
+
 public record GoogleLoginRequest(string IdToken);
 
 public record LoginResponse(string Token, int SingerId, string Name, string Role);

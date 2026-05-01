@@ -2,13 +2,12 @@ import { useRef, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { useAppSelector } from '../store'
-import { useImportCollectionCsvMutation } from '../store/apiSlice'
+import { useImportCollectionCsvMutation, useAddSongByNameMutation } from '../store/apiSlice'
 import type { CsvSkippedRow } from '../types/api'
 
 // ── Styled components ──────────────────────────────────────────────────────────
 
 const Page = styled.div`padding: 1.5rem 0;`
-
 const H1 = styled.h1`margin: 0 0 1.5rem; font-size: 1.4rem;`
 
 const Section = styled.section`
@@ -18,11 +17,7 @@ const Section = styled.section`
   margin-bottom: 1.5rem;
 `
 
-const Hint = styled.p`
-  margin: 0 0 0.75rem;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-`
+const Hint = styled.p`margin: 0 0 0.75rem; font-size: 0.875rem; color: var(--text-muted);`
 
 const FileLabel = styled.label`
   display: inline-block;
@@ -100,7 +95,30 @@ const SecondaryButton = styled.button`
   &:hover { background: var(--bg-subtle); }
 `
 
-const PreviewTable = styled.table`
+const SmallButton = styled.button`
+  padding: 0.3rem 0.7rem;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:disabled { opacity: 0.5; cursor: default; }
+`
+
+const CandidateSelect = styled.select`
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: 0.8rem;
+  max-width: 220px;
+`
+
+const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 0.85rem;
@@ -115,9 +133,17 @@ const Th = styled.th`
   font-weight: 600;
 `
 
-const Td = styled.td`
-  padding: 0.35rem 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
+const Td = styled.td`padding: 0.35rem 0.5rem; border-bottom: 1px solid var(--border-subtle);`
+
+const ReasonTd = styled(Td)`color: var(--danger-text); font-style: italic;`
+
+const ResolvedTd = styled(Td)`color: var(--success); font-weight: 600;`
+
+const ResolveTd = styled(Td)`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
 `
 
 const ResultBanner = styled.div`
@@ -130,25 +156,11 @@ const ResultBanner = styled.div`
   margin-top: 0.75rem;
 `
 
-const ErrorText = styled.p`
-  color: var(--danger-text);
-  font-size: 0.85rem;
-  margin: 0.5rem 0 0;
-`
-
-const SkippedTable = styled(PreviewTable)`margin-top: 1rem;`
-
-const SkippedReason = styled(Td)`
-  color: var(--danger-text);
-  font-style: italic;
-`
+const ErrorText = styled.p`color: var(--danger-text); font-size: 0.85rem; margin: 0.5rem 0 0;`
 
 // ── CSV parsing ────────────────────────────────────────────────────────────────
 
-interface ParsedRow {
-  title: string
-  collection: string
-}
+interface ParsedRow { title: string; collection: string }
 
 function splitCsvLine(line: string): string[] {
   const fields: string[] = []
@@ -177,14 +189,11 @@ function splitCsvLine(line: string): string[] {
 function parseCsv(raw: string): { rows: ParsedRow[]; error?: string } {
   const lines = raw.split(/\r?\n/).filter(l => l.trim())
   if (lines.length < 2) return { rows: [], error: 'Need at least a header row and one data row.' }
-
   const headers = splitCsvLine(lines[0]).map(h => h.trim().toLowerCase())
   const titleIdx = headers.indexOf('title')
   const collectionIdx = headers.indexOf('collection')
-
   if (titleIdx === -1) return { rows: [], error: 'No "Title" column found in header row.' }
   if (collectionIdx === -1) return { rows: [], error: 'No "Collection" column found in header row.' }
-
   const rows: ParsedRow[] = []
   for (const line of lines.slice(1)) {
     const fields = splitCsvLine(line).map(f => f.trim())
@@ -192,11 +201,72 @@ function parseCsv(raw: string): { rows: ParsedRow[]; error?: string } {
     const collection = fields[collectionIdx] ?? ''
     if (title || collection) rows.push({ title, collection })
   }
-
   return { rows }
 }
 
-// ── Component ──────────────────────────────────────────────────────────────────
+function candidateLabel(arranger: string | null, voicing: string | null) {
+  const parts = [arranger || 'Unknown arranger', voicing || ''].filter(Boolean)
+  return parts.join(' · ')
+}
+
+// ── Skipped row component ──────────────────────────────────────────────────────
+
+function SkippedRow({ row, index, onResolved }: {
+  row: CsvSkippedRow
+  index: number
+  onResolved: (index: number) => void
+}) {
+  const [addSong, { isLoading }] = useAddSongByNameMutation()
+  const [selectedId, setSelectedId] = useState<number>(row.candidates?.[0]?.id ?? 0)
+  const [resolved, setResolved] = useState(false)
+  const [error, setError] = useState(false)
+
+  const isAmbiguous = (row.candidates?.length ?? 0) > 0
+
+  async function handleAdd() {
+    if (!selectedId) return
+    setError(false)
+    try {
+      await addSong({ collectionName: row.collection, songId: selectedId }).unwrap()
+      setResolved(true)
+      onResolved(index)
+    } catch {
+      setError(true)
+    }
+  }
+
+  return (
+    <tr>
+      <Td>{row.title}</Td>
+      <Td>{row.collection}</Td>
+      {resolved ? (
+        <ResolvedTd colSpan={2}>Added</ResolvedTd>
+      ) : isAmbiguous ? (
+        <>
+          <ResolveTd>
+            <CandidateSelect
+              value={selectedId}
+              onChange={e => setSelectedId(Number(e.target.value))}
+            >
+              {row.candidates!.map(c => (
+                <option key={c.id} value={c.id}>{candidateLabel(c.arranger, c.voicing)}</option>
+              ))}
+            </CandidateSelect>
+            <SmallButton onClick={handleAdd} disabled={isLoading}>
+              {isLoading ? '…' : 'Add'}
+            </SmallButton>
+            {error && <span style={{ color: 'var(--danger-text)', fontSize: '0.8rem' }}>Failed</span>}
+          </ResolveTd>
+          <Td />
+        </>
+      ) : (
+        <ReasonTd colSpan={2}>{row.reason}</ReasonTd>
+      )}
+    </tr>
+  )
+}
+
+// ── Page component ─────────────────────────────────────────────────────────────
 
 export default function CollectionImportPage() {
   const isAdmin = useAppSelector(s => s.auth.role === 'Admin')
@@ -207,6 +277,7 @@ export default function CollectionImportPage() {
   const [preview, setPreview] = useState<ParsedRow[]>([])
   const [parseError, setParseError] = useState<string | null>(null)
   const [result, setResult] = useState<{ added: number; skipped: CsvSkippedRow[] } | null>(null)
+  const [resolvedCount, setResolvedCount] = useState(0)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const fileRef = useRef<HTMLInputElement>(null)
@@ -215,6 +286,7 @@ export default function CollectionImportPage() {
   function handleCsvChange(text: string) {
     setCsvText(text)
     setResult(null)
+    setResolvedCount(0)
     setSubmitError(null)
     if (!text.trim()) { setPreview([]); setParseError(null); return }
     const { rows, error } = parseCsv(text)
@@ -235,10 +307,10 @@ export default function CollectionImportPage() {
     setSubmitError(null)
     const validRows = preview.filter(r => r.title && r.collection)
     if (validRows.length === 0) return
-
     try {
       const res = await importCsv({ rows: validRows }).unwrap()
       setResult(res)
+      setResolvedCount(0)
       setCsvText('')
       setPreview([])
     } catch {
@@ -247,6 +319,7 @@ export default function CollectionImportPage() {
   }
 
   const validRows = preview.filter(r => r.title && r.collection)
+  const pendingSkipped = result ? result.skipped.length - resolvedCount : 0
 
   return (
     <Page>
@@ -254,10 +327,10 @@ export default function CollectionImportPage() {
 
       <Section>
         <Hint>
-          The CSV must have a header row containing columns named <strong>Title</strong> and{' '}
-          <strong>Collection</strong> (case-insensitive, any order). Each row adds the song with
-          that title to the named collection. Collections are created automatically if they don't
-          exist. If a title matches multiple songs in the database the row is skipped.
+          The CSV must have a header row with columns named <strong>Title</strong> and{' '}
+          <strong>Collection</strong> (case-insensitive, any order). Each row adds the song to the
+          named collection, creating it if needed. If a title matches multiple songs you can pick
+          which one to use after importing.
         </Hint>
 
         <FileLabel htmlFor="col-csv-file">Upload CSV file</FileLabel>
@@ -276,12 +349,9 @@ export default function CollectionImportPage() {
 
         {preview.length > 0 && !parseError && (
           <>
-            <PreviewTable>
+            <Table>
               <thead>
-                <tr>
-                  <Th>Title</Th>
-                  <Th>Collection</Th>
-                </tr>
+                <tr><Th>Title</Th><Th>Collection</Th></tr>
               </thead>
               <tbody>
                 {preview.map((row, i) => (
@@ -291,7 +361,7 @@ export default function CollectionImportPage() {
                   </tr>
                 ))}
               </tbody>
-            </PreviewTable>
+            </Table>
             <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               {validRows.length} row{validRows.length !== 1 ? 's' : ''} ready to import
             </p>
@@ -307,9 +377,7 @@ export default function CollectionImportPage() {
               Clear
             </SecondaryButton>
           )}
-          <SecondaryButton onClick={() => navigate('/collections')}>
-            Back to Collections
-          </SecondaryButton>
+          <SecondaryButton onClick={() => navigate('/collections')}>Back to Collections</SecondaryButton>
         </ButtonRow>
 
         {submitError && <ErrorText>{submitError}</ErrorText>}
@@ -318,31 +386,33 @@ export default function CollectionImportPage() {
       {result && (
         <Section>
           <ResultBanner>
-            Done — {result.added} song{result.added !== 1 ? 's' : ''} added to collections.
-            {result.skipped.length > 0 && ` ${result.skipped.length} row${result.skipped.length !== 1 ? 's' : ''} skipped.`}
+            {result.added} song{result.added !== 1 ? 's' : ''} added.
+            {pendingSkipped > 0 && ` ${pendingSkipped} row${pendingSkipped !== 1 ? 's' : ''} skipped — resolve ambiguous ones below.`}
+            {pendingSkipped === 0 && result.skipped.length > 0 && ' All skipped rows resolved.'}
           </ResultBanner>
 
           {result.skipped.length > 0 && (
             <>
-              <h3 style={{ margin: '1rem 0 0', fontSize: '0.95rem' }}>Skipped rows</h3>
-              <SkippedTable>
+              <h3 style={{ margin: '1rem 0 0.25rem', fontSize: '0.95rem' }}>Skipped rows</h3>
+              <Table>
                 <thead>
                   <tr>
                     <Th>Title</Th>
                     <Th>Collection</Th>
-                    <Th>Reason</Th>
+                    <Th colSpan={2}>Reason / Resolve</Th>
                   </tr>
                 </thead>
                 <tbody>
                   {result.skipped.map((row, i) => (
-                    <tr key={i}>
-                      <Td>{row.title}</Td>
-                      <Td>{row.collection}</Td>
-                      <SkippedReason>{row.reason}</SkippedReason>
-                    </tr>
+                    <SkippedRow
+                      key={i}
+                      row={row}
+                      index={i}
+                      onResolved={() => setResolvedCount(c => c + 1)}
+                    />
                   ))}
                 </tbody>
-              </SkippedTable>
+              </Table>
             </>
           )}
         </Section>

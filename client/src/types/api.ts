@@ -108,11 +108,17 @@ export interface CsvSkippedRow {
   title: string
   collection: string
   reason: string
+  candidates?: SongSummary[]
 }
 
 export interface ImportCollectionCsvResult {
   added: number
   skipped: CsvSkippedRow[]
+}
+
+export interface AddSongByNameRequest {
+  collectionName: string
+  songId: number
 }
 
 export interface SongSummary {

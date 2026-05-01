@@ -144,7 +144,12 @@ public static class CollectionsEndpoints
 
                 var songs = await db.Songs.Where(s => s.Title == title).ToListAsync();
                 if (songs.Count == 0) { skipped.Add(new CsvSkippedRow(title, collectionName, "Song not found")); continue; }
-                if (songs.Count > 1) { skipped.Add(new CsvSkippedRow(title, collectionName, "Ambiguous — multiple songs with this title")); continue; }
+                if (songs.Count > 1)
+                {
+                    var candidates = songs.Select(s => new SongSummaryDto(s.Id, s.Title, s.Arranger, s.Voicing));
+                    skipped.Add(new CsvSkippedRow(title, collectionName, "Ambiguous — multiple songs with this title", candidates));
+                    continue;
+                }
 
                 var song = songs[0];
 
@@ -178,6 +183,36 @@ public static class CollectionsEndpoints
         })
         .WithTags("Collections")
         .WithName("ImportCollectionCsv")
+        .RequireAuthorization(p => p.RequireRole("Admin"));
+
+        app.MapPost("/api/collections/add-song-by-name", async (AddSongByNameRequest req, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var singerId = GetSingerId(user);
+
+            var collection = await db.Collections
+                .Include(c => c.CollectionSongs)
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == req.CollectionName.ToLower());
+
+            if (collection is null)
+            {
+                collection = new Collection { Name = req.CollectionName, CreatedById = singerId };
+                db.Collections.Add(collection);
+                await db.SaveChangesAsync();
+                collection.CollectionSongs = [];
+            }
+
+            if (collection.CollectionSongs.Any(cs => cs.SongId == req.SongId))
+                return Results.Ok();
+
+            var song = await db.Songs.FindAsync(req.SongId);
+            if (song is null) return Results.NotFound();
+
+            db.CollectionSongs.Add(new CollectionSong { CollectionId = collection.Id, SongId = req.SongId });
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        })
+        .WithTags("Collections")
+        .WithName("AddSongToCollectionByName")
         .RequireAuthorization(p => p.RequireRole("Admin"));
 
         group.MapPost("/{id:int}/import", async (int id, ImportCollectionRequest req, ClaimsPrincipal user, AppDbContext db) =>

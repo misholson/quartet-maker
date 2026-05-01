@@ -40,8 +40,9 @@ public record ImportResultDto(int Added, int Skipped);
 
 public record CollectionCsvRow(string Title, string Collection);
 public record ImportCollectionCsvRequest(IEnumerable<CollectionCsvRow> Rows);
-public record CsvSkippedRow(string Title, string Collection, string Reason);
+public record CsvSkippedRow(string Title, string Collection, string Reason, IEnumerable<SongSummaryDto>? Candidates = null);
 public record ImportCollectionCsvResult(int Added, IEnumerable<CsvSkippedRow> Skipped);
+public record AddSongByNameRequest(string CollectionName, int SongId);
 
 public record GoogleLoginRequest(string IdToken);
 

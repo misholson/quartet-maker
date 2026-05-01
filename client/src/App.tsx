@@ -9,6 +9,8 @@ import QuartetFinderPage from './pages/QuartetFinderPage'
 import JoinPage from './pages/JoinPage'
 import CollectionsPage from './pages/CollectionsPage'
 import CollectionDetailPage from './pages/CollectionDetailPage'
+import CollectionImportPage from './pages/CollectionImportPage'
+import SongImportPage from './pages/SongImportPage'
 
 const GlobalStyle = createGlobalStyle`
   *, *::before, *::after { box-sizing: border-box; }
@@ -122,7 +124,9 @@ export default function App() {
             <Route path="/quartet" element={<QuartetFinderPage />} />
             <Route path="/join/:inviteCode" element={<JoinPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
+            <Route path="/collections/import" element={<CollectionImportPage />} />
             <Route path="/collections/:id" element={<CollectionDetailPage />} />
+            <Route path="/songs/import" element={<SongImportPage />} />
           </Route>
         </Routes>
       </AppContainer>

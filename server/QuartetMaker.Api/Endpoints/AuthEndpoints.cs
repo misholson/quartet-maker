@@ -45,7 +45,7 @@ public static class AuthEndpoints
             }
 
             var token = BuildJwt(singer, config);
-            return Results.Ok(new LoginResponse(token, singer.Id, singer.Name));
+            return Results.Ok(new LoginResponse(token, singer.Id, singer.Name, singer.Role.ToString()));
         })
         .WithTags("Auth")
         .WithName("GoogleLogin")
@@ -68,6 +68,7 @@ public static class AuthEndpoints
                 new Claim(JwtRegisteredClaimNames.Sub, singer.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Name, singer.Name),
                 new Claim(JwtRegisteredClaimNames.Email, singer.Email ?? string.Empty),
+                new Claim(ClaimTypes.Role, singer.Role.ToString()),
             ],
             expires: expiry,
             signingCredentials: creds);

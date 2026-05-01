@@ -96,6 +96,18 @@ public static class SingersEndpoints
         })
         .WithName("RemoveSong");
 
+        app.MapPut("/api/singers/{id:int}/role", async (int id, SetRoleRequest req, AppDbContext db) =>
+        {
+            var singer = await db.Singers.FindAsync(id);
+            if (singer is null) return Results.NotFound();
+            singer.Role = req.Role;
+            await db.SaveChangesAsync();
+            return Results.NoContent();
+        })
+        .WithTags("Singers")
+        .WithName("SetRole")
+        .RequireAuthorization(p => p.RequireRole("Admin"));
+
         return app;
     }
 }

@@ -129,6 +129,92 @@ public static class CollectionsEndpoints
         })
         .WithName("RemoveSongFromCollection");
 
+        app.MapPost("/api/collections/import-csv", async (ImportCollectionCsvRequest req, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var singerId = GetSingerId(user);
+            int added = 0;
+            var skipped = new List<CsvSkippedRow>();
+            var collectionCache = new Dictionary<string, Collection>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in req.Rows)
+            {
+                var title = row.Title.Trim();
+                var collectionName = row.Collection.Trim();
+                if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(collectionName)) continue;
+
+                var songs = await db.Songs.Where(s => s.Title == title).ToListAsync();
+                if (songs.Count == 0) { skipped.Add(new CsvSkippedRow(title, collectionName, "Song not found")); continue; }
+                if (songs.Count > 1)
+                {
+                    var candidates = songs.Select(s => new SongSummaryDto(s.Id, s.Title, s.Arranger, s.Voicing));
+                    skipped.Add(new CsvSkippedRow(title, collectionName, "Ambiguous — multiple songs with this title", candidates));
+                    continue;
+                }
+
+                var song = songs[0];
+
+                if (!collectionCache.TryGetValue(collectionName, out var collection))
+                {
+                    collection = await db.Collections
+                        .Include(c => c.CollectionSongs)
+                        .FirstOrDefaultAsync(c => c.Name.ToLower() == collectionName.ToLower());
+
+                    if (collection is null)
+                    {
+                        collection = new Collection { Name = collectionName, CreatedById = singerId };
+                        db.Collections.Add(collection);
+                        await db.SaveChangesAsync();
+                        collection.CollectionSongs = [];
+                    }
+
+                    collectionCache[collectionName] = collection;
+                }
+
+                if (collection.CollectionSongs.Any(cs => cs.SongId == song.Id)) continue;
+
+                var entry = new CollectionSong { CollectionId = collection.Id, SongId = song.Id };
+                db.CollectionSongs.Add(entry);
+                collection.CollectionSongs.Add(entry);
+                added++;
+            }
+
+            await db.SaveChangesAsync();
+            return Results.Ok(new ImportCollectionCsvResult(added, skipped));
+        })
+        .WithTags("Collections")
+        .WithName("ImportCollectionCsv")
+        .RequireAuthorization(p => p.RequireRole("Admin"));
+
+        app.MapPost("/api/collections/add-song-by-name", async (AddSongByNameRequest req, ClaimsPrincipal user, AppDbContext db) =>
+        {
+            var singerId = GetSingerId(user);
+
+            var collection = await db.Collections
+                .Include(c => c.CollectionSongs)
+                .FirstOrDefaultAsync(c => c.Name.ToLower() == req.CollectionName.ToLower());
+
+            if (collection is null)
+            {
+                collection = new Collection { Name = req.CollectionName, CreatedById = singerId };
+                db.Collections.Add(collection);
+                await db.SaveChangesAsync();
+                collection.CollectionSongs = [];
+            }
+
+            if (collection.CollectionSongs.Any(cs => cs.SongId == req.SongId))
+                return Results.Ok();
+
+            var song = await db.Songs.FindAsync(req.SongId);
+            if (song is null) return Results.NotFound();
+
+            db.CollectionSongs.Add(new CollectionSong { CollectionId = collection.Id, SongId = req.SongId });
+            await db.SaveChangesAsync();
+            return Results.Ok();
+        })
+        .WithTags("Collections")
+        .WithName("AddSongToCollectionByName")
+        .RequireAuthorization(p => p.RequireRole("Admin"));
+
         group.MapPost("/{id:int}/import", async (int id, ImportCollectionRequest req, ClaimsPrincipal user, AppDbContext db) =>
         {
             var singerId = GetSingerId(user);

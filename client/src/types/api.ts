@@ -1,5 +1,6 @@
 export type Part = 'Tenor' | 'Lead' | 'Baritone' | 'Bass'
 export type Voicing = 'TTBB' | 'SATB' | 'SSAA' | 'Other'
+export type Role = 'User' | 'Admin'
 
 export interface SingerSummary {
   id: number
@@ -41,6 +42,7 @@ export interface LoginResponse {
   token: string
   singerId: number
   name: string
+  role: Role
 }
 
 export interface QuartetMemberInfo {
@@ -93,11 +95,47 @@ export interface ImportResult {
   skipped: number
 }
 
+export interface CollectionCsvRow {
+  title: string
+  collection: string
+}
+
+export interface ImportCollectionCsvRequest {
+  rows: CollectionCsvRow[]
+}
+
+export interface CsvSkippedRow {
+  title: string
+  collection: string
+  reason: string
+  candidates?: SongSummary[]
+}
+
+export interface ImportCollectionCsvResult {
+  added: number
+  skipped: CsvSkippedRow[]
+}
+
+export interface AddSongByNameRequest {
+  collectionName: string
+  songId: number
+}
+
 export interface SongSummary {
   id: number
   title: string
   arranger: string | null
   voicing: Voicing | null
+}
+
+export interface CreateSongRequest {
+  title: string
+  arranger?: string
+  voicing?: Voicing
+}
+
+export interface ImportSongsRequest {
+  songs: CreateSongRequest[]
 }
 
 export interface QuartetSong {

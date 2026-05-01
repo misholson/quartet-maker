@@ -55,6 +55,13 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    // EnsureCreated won't update an existing schema, so schema changes are patched manually.
+    db.Database.ExecuteSqlRaw("DROP INDEX IF EXISTS \"IX_Songs_Title\"");
+    db.Database.ExecuteSqlRaw(
+        "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_Songs_Title_Arranger_Voicing\" " +
+        "ON \"Songs\" (\"Title\", \"Arranger\", \"Voicing\")");
+    try { db.Database.ExecuteSqlRaw("ALTER TABLE \"Singers\" ADD COLUMN \"Role\" TEXT NOT NULL DEFAULT 'User'"); }
+    catch { /* column already exists */ }
     await Seeder.SeedAsync(db);
 }
 

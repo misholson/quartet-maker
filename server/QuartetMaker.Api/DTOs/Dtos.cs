@@ -21,6 +21,8 @@ public record PartCoverageDto(
 public record QuartetSongDto(string Title, string? Arranger, Voicing? Voicing, PartCoverageDto Coverage, bool IsComplete);
 
 public record SongSummaryDto(int Id, string Title, string? Arranger, Voicing? Voicing);
+public record CreateSongRequest(string Title, string? Arranger, Voicing? Voicing);
+public record ImportSongsRequest(IEnumerable<CreateSongRequest> Songs);
 
 public record CreateQuartetRequest(string Name);
 public record QuartetMemberDto(int SingerId, string Name, bool IsOwner);
@@ -36,6 +38,14 @@ public record AddSongToCollectionRequest(int SongId);
 public record ImportCollectionRequest(Part Part);
 public record ImportResultDto(int Added, int Skipped);
 
+public record CollectionCsvRow(string Title, string Collection);
+public record ImportCollectionCsvRequest(IEnumerable<CollectionCsvRow> Rows);
+public record CsvSkippedRow(string Title, string Collection, string Reason, IEnumerable<SongSummaryDto>? Candidates = null);
+public record ImportCollectionCsvResult(int Added, IEnumerable<CsvSkippedRow> Skipped);
+public record AddSongByNameRequest(string CollectionName, int SongId);
+
 public record GoogleLoginRequest(string IdToken);
 
-public record LoginResponse(string Token, int SingerId, string Name);
+public record LoginResponse(string Token, int SingerId, string Name, string Role);
+
+public record SetRoleRequest(Role Role);

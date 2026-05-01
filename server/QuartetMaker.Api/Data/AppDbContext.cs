@@ -46,8 +46,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .IsUnique();
 
         modelBuilder.Entity<Song>()
+            .Property(s => s.Title)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Song>()
+            .Property(s => s.Arranger)
+            .HasMaxLength(500);
+
+        modelBuilder.Entity<Song>()
             .Property(s => s.Voicing)
-            .HasConversion<string>();
+            .HasConversion<string>()
+            .HasMaxLength(10);
 
         modelBuilder.Entity<SingerSong>()
             .Property(ss => ss.Part)

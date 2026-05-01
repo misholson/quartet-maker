@@ -70,6 +70,10 @@ using (var scope = app.Services.CreateScope())
         db.Database.ExecuteSqlRaw(
             "IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Songs_Title' AND object_id = OBJECT_ID('Songs')) " +
             "DROP INDEX IX_Songs_Title ON Songs");
+        // NVARCHAR(MAX) columns cannot be indexed in SQL Server — narrow them first.
+        db.Database.ExecuteSqlRaw("ALTER TABLE Songs ALTER COLUMN Title NVARCHAR(500) NOT NULL");
+        db.Database.ExecuteSqlRaw("ALTER TABLE Songs ALTER COLUMN Arranger NVARCHAR(500) NULL");
+        db.Database.ExecuteSqlRaw("ALTER TABLE Songs ALTER COLUMN Voicing NVARCHAR(10) NULL");
         db.Database.ExecuteSqlRaw(
             "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Songs_Title_Arranger_Voicing' AND object_id = OBJECT_ID('Songs')) " +
             "CREATE UNIQUE INDEX IX_Songs_Title_Arranger_Voicing ON Songs (Title, Arranger, Voicing)");

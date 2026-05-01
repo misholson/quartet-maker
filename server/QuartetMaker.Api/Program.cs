@@ -56,12 +56,27 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
     // EnsureCreated won't update an existing schema, so schema changes are patched manually.
-    db.Database.ExecuteSqlRaw("DROP INDEX IF EXISTS \"IX_Songs_Title\"");
-    db.Database.ExecuteSqlRaw(
-        "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_Songs_Title_Arranger_Voicing\" " +
-        "ON \"Songs\" (\"Title\", \"Arranger\", \"Voicing\")");
-    try { db.Database.ExecuteSqlRaw("ALTER TABLE \"Singers\" ADD COLUMN \"Role\" TEXT NOT NULL DEFAULT 'User'"); }
-    catch { /* column already exists */ }
+    if (isSqlite)
+    {
+        db.Database.ExecuteSqlRaw("DROP INDEX IF EXISTS \"IX_Songs_Title\"");
+        db.Database.ExecuteSqlRaw(
+            "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_Songs_Title_Arranger_Voicing\" " +
+            "ON \"Songs\" (\"Title\", \"Arranger\", \"Voicing\")");
+        try { db.Database.ExecuteSqlRaw("ALTER TABLE \"Singers\" ADD COLUMN \"Role\" TEXT NOT NULL DEFAULT 'User'"); }
+        catch { /* column already exists */ }
+    }
+    else
+    {
+        db.Database.ExecuteSqlRaw(
+            "IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Songs_Title' AND object_id = OBJECT_ID('Songs')) " +
+            "DROP INDEX IX_Songs_Title ON Songs");
+        db.Database.ExecuteSqlRaw(
+            "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Songs_Title_Arranger_Voicing' AND object_id = OBJECT_ID('Songs')) " +
+            "CREATE UNIQUE INDEX IX_Songs_Title_Arranger_Voicing ON Songs (Title, Arranger, Voicing)");
+        db.Database.ExecuteSqlRaw(
+            "IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Singers' AND COLUMN_NAME = 'Role') " +
+            "ALTER TABLE Singers ADD Role NVARCHAR(MAX) NOT NULL DEFAULT 'User'");
+    }
     await Seeder.SeedAsync(db);
 }
 

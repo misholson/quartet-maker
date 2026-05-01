@@ -117,7 +117,7 @@ export default function NavBar() {
 
   return (
     <Nav>
-      <Title>Quartet Maker</Title>
+      <Title>Virtual Quartet BETA</Title>
       <HamburgerButton
         onClick={() => setMenuOpen(v => !v)}
         aria-label={menuOpen ? 'Close menu' : 'Open menu'}

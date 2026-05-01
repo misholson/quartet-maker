@@ -56,7 +56,7 @@ export default function LoginPage() {
 
   return (
     <Page>
-      <Title>Quartet Maker</Title>
+      <Title>Virtual Quartet BETA</Title>
       <Subtitle>Sign in to manage your song repertoire.</Subtitle>
       <GoogleLogin
         onSuccess={response => handleSuccess(response.credential!)}

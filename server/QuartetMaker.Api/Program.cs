@@ -55,6 +55,12 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
+    // Replace the title-only unique index with a composite one (title+arranger+voicing).
+    // EnsureCreated won't update an existing schema, so we patch it manually.
+    db.Database.ExecuteSqlRaw("DROP INDEX IF EXISTS \"IX_Songs_Title\"");
+    db.Database.ExecuteSqlRaw(
+        "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_Songs_Title_Arranger_Voicing\" " +
+        "ON \"Songs\" (\"Title\", \"Arranger\", \"Voicing\")");
     await Seeder.SeedAsync(db);
 }
 

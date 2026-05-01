@@ -38,7 +38,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasConversion<string>();
 
         modelBuilder.Entity<Song>()
-            .HasIndex(s => s.Title)
+            .HasIndex(s => new { s.Title, s.Arranger, s.Voicing })
             .IsUnique();
 
         modelBuilder.Entity<Song>()

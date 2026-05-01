@@ -5,6 +5,8 @@ import type {
   SongSummary,
   RepertoireEntry,
   AddSongRequest,
+  CreateSongRequest,
+  ImportSongsRequest,
   QuartetSong,
   QuartetDetail,
   QuartetSummary,
@@ -117,6 +119,14 @@ export const api = createApi({
       query: search => `/api/songs?search=${encodeURIComponent(search)}`,
     }),
 
+    createSong: builder.mutation<SongSummary, CreateSongRequest>({
+      query: body => ({ url: '/api/songs', method: 'POST', body }),
+    }),
+
+    importSongs: builder.mutation<ImportResult, ImportSongsRequest>({
+      query: body => ({ url: '/api/songs/import', method: 'POST', body }),
+    }),
+
     getCollections: builder.query<CollectionSummary[], string>({
       query: search => `/api/collections${search ? `?search=${encodeURIComponent(search)}` : ''}`,
       providesTags: result =>
@@ -176,6 +186,8 @@ export const {
   useJoinQuartetMutation,
   useGetQuartetSongsQuery,
   useGetSongsQuery,
+  useCreateSongMutation,
+  useImportSongsMutation,
   useGetCollectionsQuery,
   useGetCollectionQuery,
   useCreateCollectionMutation,

@@ -100,6 +100,16 @@ export interface SongSummary {
   voicing: Voicing | null
 }
 
+export interface CreateSongRequest {
+  title: string
+  arranger?: string
+  voicing?: Voicing
+}
+
+export interface ImportSongsRequest {
+  songs: CreateSongRequest[]
+}
+
 export interface QuartetSong {
   title: string
   arranger: string | null

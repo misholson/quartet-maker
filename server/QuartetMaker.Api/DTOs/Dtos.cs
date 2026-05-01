@@ -21,6 +21,8 @@ public record PartCoverageDto(
 public record QuartetSongDto(string Title, string? Arranger, Voicing? Voicing, PartCoverageDto Coverage, bool IsComplete);
 
 public record SongSummaryDto(int Id, string Title, string? Arranger, Voicing? Voicing);
+public record CreateSongRequest(string Title, string? Arranger, Voicing? Voicing);
+public record ImportSongsRequest(IEnumerable<CreateSongRequest> Songs);
 
 public record CreateQuartetRequest(string Name);
 public record QuartetMemberDto(int SingerId, string Name, bool IsOwner);

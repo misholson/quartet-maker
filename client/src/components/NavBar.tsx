@@ -128,6 +128,7 @@ export default function NavBar() {
         <StyledLink to="/my-songs" onClick={closeMenu}>My Songs</StyledLink>
         <StyledLink to="/quartet" onClick={closeMenu}>Find a Quartet</StyledLink>
         <StyledLink to="/collections" onClick={closeMenu}>Collections</StyledLink>
+        <StyledLink to="/songs/import" onClick={closeMenu}>Import Songs</StyledLink>
         {name && <UserName>{name}</UserName>}
         <LogoutButton onClick={() => { handleLogout(); closeMenu() }}>Sign out</LogoutButton>
       </NavLinks>

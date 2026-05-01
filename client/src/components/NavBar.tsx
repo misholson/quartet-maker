@@ -5,6 +5,10 @@ import { useAppDispatch, useAppSelector } from '../store'
 import { logout } from '../store/authSlice'
 
 const Nav = styled.nav`
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
   display: flex;
   align-items: center;
   flex-wrap: wrap;

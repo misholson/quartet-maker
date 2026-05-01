@@ -13,7 +13,7 @@ A web application that helps groups of barbershop singers find songs they all kn
 
 ## git
 
-If in the main branch, create a new branch before making changes.
+At the beginning of the session, if in the main branch, create a new branch before making changes.
 
 ## Commands
 
@@ -79,6 +79,10 @@ Songs are a shared entity (unique by title). `POST /songs` finds-or-creates the 
 ## Data model
 
 `Singer` ←→ `SingerSong` ←→ `Song` (many-to-many with `Part` as payload on the join table). Composite PK on `SingerSong` is `(SingerId, SongId, Part)` — a singer can know the same song on multiple parts.
+
+## Database
+
+When writing SQL queries, make them compatible with both sqlite (when running locally) and SQL (for when deployed to Azure SQL).
 
 ## Frontend state model
 
